@@ -104,7 +104,6 @@ class _MaterialControlsState extends State<MaterialControls> {
     BuildContext context,
     VideoPlayerController controller,
   ) {
-    final iconColor = Theme.of(context).textTheme.button.color;
 
     return new AnimatedOpacity(
       opacity: _hideStuff ? 0.0 : 1.0,
