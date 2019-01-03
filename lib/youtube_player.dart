@@ -1,3 +1,37 @@
+// Copyright 2018 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a Apache license that can be found
+// in the LICENSE file.
+
+/// Youtube Player
+/// Author: Sarbagya Dhaubanjar
+///
+///                               ,,
+///    .M"""bgd                  *MM
+///   ,MI    "Y                   MM
+///   `MMb.      ,6"Yb.  `7Mb,od8 MM,dMMb.   ,6"Yb.  .P"Ybmmm `7M'   `MF',6"Yb.
+///     `YMMNq. 8)   MM    MM' "' MM    `Mb 8)   MM :MI  I8     VA   ,V 8)   MM
+///   .     `MM  ,pm9MM    MM     MM     M8  ,pm9MM  WmmmP"      VA ,V   ,pm9MM
+///   Mb     dM 8M   MM    MM     MM.   ,M9 8M   MM 8M            VVV   8M   MM
+///   P"Ybmmd"  `Moo9^Yo..JMML.   P^YbmdP'  `Moo9^Yo.YMMMMMb      ,V    `Moo9^Yo.
+///                                              6'     dP    ,V
+///                                              Ybmmmd'   OOb"
+///
+///
+///                ,,                           ,,                             ,,
+///   `7MM"""Yb. `7MM                          *MM                             db
+///     MM    `Yb. MM                           MM
+///     MM     `Mb MMpMMMb.   ,6"Yb.`7MM  `7MM  MM,dMMb.   ,6"Yb.  `7MMpMMMb.`7MM  ,6"Yb.  `7Mb,od8
+///     MM      MM MM    MM  8)   MM  MM    MM  MM    `Mb 8)   MM    MM    MM  MM 8)   MM    MM' "'
+///     MM     ,MP MM    MM   ,pm9MM  MM    MM  MM     M8  ,pm9MM    MM    MM  MM  ,pm9MM    MM
+///     MM    ,dP' MM    MM  8M   MM  MM    MM  MM.   ,M9 8M   MM    MM    MM  MM 8M   MM    MM
+///   .JMMmmmdP' .JMML  JMML.`Moo9^Yo.`Mbod"YML.P^YbmdP'  `Moo9^Yo..JMML  JMML.MM `Moo9^Yo..JMML.
+///                                                                         QO MP
+///                                                                         `bmP
+
+/// Website: https://sarbagyastha.com.np
+/// Github: https://github.com/sarbagyastha/youtube_player
+///
+
 import 'dart:io';
 import 'dart:async';
 import 'chewie.dart';
