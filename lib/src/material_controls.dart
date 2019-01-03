@@ -38,6 +38,7 @@ class _MaterialControlsState extends State<MaterialControls> {
   Timer _showTimer;
   Timer _showAfterExpandCollapseTimer;
   bool _dragging = false;
+  bool _showControls = false;
 
   final barHeight = 48.0;
   final marginSize = 5.0;
@@ -154,11 +155,10 @@ class _MaterialControlsState extends State<MaterialControls> {
       child: new GestureDetector(
         onTap: _latestValue != null && _latestValue.isPlaying
             ? () {
-                //_playPause();
-                //_cancelAndRestartTimer;
                 setState(() {
-                  _hideStuff = false;
+                  _hideStuff = _showControls ? false : true;
                 });
+                _showControls = !_showControls;
               }
             : () {
                 _playPause();
