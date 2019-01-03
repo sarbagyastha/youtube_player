@@ -65,7 +65,7 @@ YoutubePlayer(
 
 [Example sources](https://github.com/sarbagyastha/youtube_player/tree/master/example)
 
-### Salient Features
+### Limitation
 * Only Available for Android (Currently)
 
 ### Future
