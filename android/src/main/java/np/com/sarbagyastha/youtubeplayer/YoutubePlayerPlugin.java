@@ -46,12 +46,17 @@ import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.Player.DefaultEventListener;
+import com.google.android.exoplayer2.Player.*;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.dash.DashMediaSource;
+import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
+import com.google.android.exoplayer2.source.hls.HlsMediaSource;
+import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
+import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.source.MergingMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
@@ -120,14 +125,45 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                 true);
 
 
-      MediaSource mediaSource = buildMediaSource(vuri, auri, dataSourceFactory);
+      MediaSource mediaSource = buildMediaSource(vuri, auri, dataSourceFactory, context);
       exoPlayer.prepare(mediaSource);
 
       setupYoutubePlayer(eventChannel, textureEntry, result);
     }
 
     private MediaSource buildMediaSource(
-        Uri vuri,Uri auri, DataSource.Factory mediaDataSourceFactory) {
+        Uri vuri,Uri auri, DataSource.Factory mediaDataSourceFactory, Context context) {
+      int type = Util.inferContentType(vuri.getLastPathSegment());
+      switch (type) {
+        case C.TYPE_SS:
+          System.out.println("Media Type: SMOOTH_STREAMING");
+          SsMediaSource vSSource = new SsMediaSource.Factory(
+                  new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
+                  new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
+                  .createMediaSource(vuri);
+          SsMediaSource aSSource = new SsMediaSource.Factory(
+                  new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
+                  new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
+                  .createMediaSource(auri);
+          return new MergingMediaSource(vSSource,aSSource);
+        case C.TYPE_DASH:
+          System.out.println("Media Type: DASH");
+          DashMediaSource vDSource = new DashMediaSource.Factory(
+                  new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+                  new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
+                  .createMediaSource(vuri);
+          DashMediaSource aDSource = new DashMediaSource.Factory(
+                  new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
+                  new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
+                  .createMediaSource(auri);
+          return new MergingMediaSource(vDSource,aDSource);
+        case C.TYPE_HLS:
+          System.out.println("Media Type: HLS");
+          HlsMediaSource vHSource =  new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(vuri);
+          HlsMediaSource aHSource =  new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(auri);
+          return new MergingMediaSource(vHSource,aHSource);
+        case C.TYPE_OTHER:
+          System.out.println("Media Type: NORMAL");
           ExtractorMediaSource vESource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
                   .setExtractorsFactory(new DefaultExtractorsFactory())
                   .createMediaSource(vuri);
@@ -135,8 +171,14 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                   .setExtractorsFactory(new DefaultExtractorsFactory())
                   .createMediaSource(auri);
           return new MergingMediaSource(vESource,aESource);
+        default:
+        {
+          throw new IllegalStateException("Unsupported type: " + type);
+        }
+      }
     }
 
+    @SuppressWarnings("deprecation")
     private void setupYoutubePlayer(
         EventChannel eventChannel,
         TextureRegistry.SurfaceTextureEntry textureEntry,

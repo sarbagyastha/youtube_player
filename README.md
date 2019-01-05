@@ -1,6 +1,6 @@
-# Youtube Player
+# Youtube Player Plugin 
 
-[[pub packages]](https://pub.dartlang.org/packages/youtube_player)
+[![pub package](https://img.shields.io/badge/pub-v0.5.0-brightgreen.svg)](https://pub.dartlang.org/packages/youtube_player)
 
 A flutter plugin to play Youtube Videos "inline" without API Key in ranges of Quality(240p, 360p, 480p, 720p and 1080p).
 
@@ -8,6 +8,7 @@ A flutter plugin to play Youtube Videos "inline" without API Key in ranges of Qu
 * Inline playback
 * Supports HD and Full HD quality
 * No need for API Key and no Limitations
+* Thumbnail Support
 * Playable through <video id> or <link>
 * Picture in Picture for Android SDK > 24
 * Customizable Controls
@@ -23,7 +24,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player: ^0.4.0
+  youtube_player: ^0.5.0
 ```
 
 #### 2\. Install
@@ -52,11 +53,14 @@ import 'package:youtube_player/youtube_player.dart';
 /// HD = 720p
 /// FHD = 1080p
 /// "source" can be either youtube video ID or link.
+/// "showThumbnail" Default is true.
+/// "acpectRatio" Default is 16/9
 ///
 YoutubePlayer(
           source: "6rwu29ZAbh8",
           quality: YoutubeQuality.HD,
           aspectRatio: 16/9,
+          showThumbnail: true,
 ),
 ```
 

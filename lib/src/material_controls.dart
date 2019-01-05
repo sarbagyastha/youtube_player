@@ -38,7 +38,7 @@ class _MaterialControlsState extends State<MaterialControls> {
   Timer _showTimer;
   Timer _showAfterExpandCollapseTimer;
   bool _dragging = false;
-  bool _showControls = false;
+  bool _showControls = true;
 
   final barHeight = 48.0;
   final marginSize = 5.0;

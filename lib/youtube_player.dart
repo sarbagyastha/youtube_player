@@ -35,7 +35,7 @@
 import 'dart:io';
 import 'dart:async';
 import 'chewie.dart';
-import 'package:dio/dio.dart';
+import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -697,6 +697,8 @@ class YoutubePlayer extends StatefulWidget {
   final Color handleColor;
   final Widget placeHolder;
   final Duration startAt;
+  final bool showThumbnail;
+  final bool loop;
 
   YoutubePlayer(
       {@required this.source,
@@ -706,7 +708,9 @@ class YoutubePlayer extends StatefulWidget {
       this.playedColor = Colors.pink,
       this.handleColor = Colors.pink,
       this.placeHolder,
-      this.startAt});
+      this.startAt,
+      this.showThumbnail = true,
+      this.loop = true});
 
   @override
   State<StatefulWidget> createState() {
@@ -721,14 +725,14 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   List urls = <String>[];
   String quality = "";
   String currentVideoId;
-  String videoId;
+  String videoId = "";
 
   @override
   void initState() {
     super.initState();
-    if(widget.source.contains("http")){
+    if (widget.source.contains("http")) {
       videoId = getIdFromUrl(widget.source);
-    }else{
+    } else {
       videoId = widget.source;
     }
     setState(() {
@@ -738,14 +742,49 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   loadUrl() async {
-    currentVideoId = videoId;
-    quality = qualityMapping(widget.quality);
-    url = await getYoutubeUrls(videoId);
-    _videoController =
-        VideoPlayerController.network(url[quality] + "sarbagya" + url['aac']);
-    setState(() {
-      showVideo = true;
-    });
+    try {
+      currentVideoId = videoId;
+      quality = qualityMapping(widget.quality);
+      url = await getYoutubeUrls(videoId);
+      if (url[quality] != null) {
+        _videoController = VideoPlayerController.network(
+            url[quality] + "sarbagya" + url['aac']);
+        setState(() {
+          showVideo = true;
+        });
+      } else {
+        quality = "480p";
+        if (url[quality] != null) {
+          _videoController = VideoPlayerController.network(
+              url[quality] + "sarbagya" + url['aac']);
+          setState(() {
+            showVideo = true;
+          });
+        } else {
+          quality = "360p";
+          if (url[quality] != null) {
+            _videoController = VideoPlayerController.network(
+                url[quality] + "sarbagya" + url['aac']);
+            setState(() {
+              showVideo = true;
+            });
+          } else {
+            quality = "240p";
+            if (url[quality] != null) {
+              _videoController = VideoPlayerController.network(
+                  url[quality] + "sarbagya" + url['aac']);
+              setState(() {
+                showVideo = true;
+              });
+            } else {
+              throw Exception("Video Source Not Found");
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint(e.toString());
+    }
   }
 
   static String getIdFromUrl(String url, [bool trimWhitespaces = true]) {
@@ -769,22 +808,26 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     new RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
   ];
 
-
   @override
   Widget build(BuildContext context) {
-    if(widget.source.contains("http")){
+    if (widget.source.contains("http")) {
       videoId = getIdFromUrl(widget.source);
-    }else{
+    } else {
       videoId = widget.source;
     }
-    print("built");
-    print(currentVideoId);
-    print(videoId);
-    if(currentVideoId!=videoId){
+    print("Youtube Video Id: $videoId");
+    if (currentVideoId != videoId) {
       loadUrl();
     }
     return Container(
-      color: Colors.black,
+      decoration: BoxDecoration(
+          color: Colors.black,
+          image: DecorationImage(
+              image: widget.showThumbnail
+                  ? NetworkImage(
+                      "https://i3.ytimg.com/vi/$videoId/sddefault.jpg")
+                  : NetworkImage(""),
+              fit: BoxFit.cover)),
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.width / widget.aspectRatio,
       child: showVideo
@@ -792,16 +835,18 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
               _videoController,
               aspectRatio: widget.aspectRatio,
               autoPlay: true,
-              looping: true,
+              looping: widget.loop,
               materialProgressColors: ChewieProgressColors(
                 bufferedColor: widget.bufferedColor,
                 playedColor: widget.playedColor,
                 handleColor: widget.handleColor,
               ),
               placeholder: widget.placeHolder,
-        startAt: widget.startAt,
+              startAt: widget.startAt,
             )
-          : Center(child:CircularProgressIndicator(),),
+          : Center(
+              child: CircularProgressIndicator(),
+            ),
     );
   }
 
@@ -829,34 +874,38 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     var tempQuality;
     var currentQuality = "";
     Map youtubeUrls = {};
-    Dio dio = Dio();
-    var result = await dio.get('https://www.youtube.com/watch?v=$youtubeId');
-    rawURLs = result.data.toString().split(r'\"url\":\"');
-    rawURLs.forEach((url) {
-      if (url.contains("mimeType")) {
-        tempUrl = url.split(r'\",\"mimeType\":\"').first;
-        if (tempUrl.contains('mime=video%2Fmp4')) {
-          tempDecodedUrl =
-              tempUrl.replaceAll(r'\u0026', '&').replaceAll(r'\', '');
+    try {
+      var result = await http.get('https://www.youtube.com/watch?v=$youtubeId');
+      rawURLs = result.body.toString().split(r'\"url\":\"');
+      rawURLs.forEach((url) {
+        if (url.contains("mimeType")) {
+          tempUrl = url.split(r'\",\"mimeType\":\"').first;
+          if (tempUrl.contains('mime=video%2Fmp4')) {
+            tempDecodedUrl =
+                tempUrl.replaceAll(r'\u0026', '&').replaceAll(r'\', '');
 
-          if ((tempQuality = url.split(r'\",\"mimeType\":\"')[1])
-              .contains(r'\"qualityLabel\":\"')) {
-            tempQuality =
-                tempQuality.toString().split(r'\"qualityLabel\":\"')[1];
-            tempQuality =
-                tempQuality.toString().split(r'\",\"projectionType\"').first;
+            if ((tempQuality = url.split(r'\",\"mimeType\":\"')[1])
+                .contains(r'\"qualityLabel\":\"')) {
+              tempQuality =
+                  tempQuality.toString().split(r'\"qualityLabel\":\"')[1];
+              tempQuality =
+                  tempQuality.toString().split(r'\",\"projectionType\"').first;
+            }
+            if (currentQuality != tempQuality) {
+              youtubeUrls[tempQuality] = tempDecodedUrl;
+              currentQuality = tempQuality;
+            }
           }
-          if (currentQuality != tempQuality) {
-            youtubeUrls[tempQuality] = tempDecodedUrl;
-            currentQuality = tempQuality;
+          if (tempUrl.contains('mime=audio%2Fmp4')) {
+            youtubeUrls['aac'] =
+                tempUrl.replaceAll(r'\u0026', '&').replaceAll(r'\', '');
           }
         }
-        if (tempUrl.contains('mime=audio%2Fmp4')) {
-          youtubeUrls['aac'] =
-              tempUrl.replaceAll(r'\u0026', '&').replaceAll(r'\', '');
-        }
-      }
-    });
-    return youtubeUrls;
+      });
+      return youtubeUrls;
+    } catch (e) {
+      print(e.toString());
+      return Map();
+    }
   }
 }
