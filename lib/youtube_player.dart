@@ -354,7 +354,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       );
       _timer = Timer.periodic(
         const Duration(milliseconds: 500),
-        (Timer timer) async {
+            (Timer timer) async {
           if (_isDisposed) {
             return;
           }
@@ -590,11 +590,11 @@ class _VideoScrubberState extends State<_VideoScrubber> {
 /// that will also detect the gestures.
 class VideoProgressIndicator extends StatefulWidget {
   VideoProgressIndicator(
-    this.controller, {
-    VideoProgressColors colors,
-    this.allowScrubbing,
-    this.padding = const EdgeInsets.only(top: 5.0),
-  }) : colors = colors ?? VideoProgressColors();
+      this.controller, {
+        VideoProgressColors colors,
+        this.allowScrubbing,
+        this.padding = const EdgeInsets.only(top: 5.0),
+      }) : colors = colors ?? VideoProgressColors();
 
   final VideoPlayerController controller;
   final VideoProgressColors colors;
@@ -606,8 +606,8 @@ class VideoProgressIndicator extends StatefulWidget {
 }
 
 final MethodChannel _channel =
-    const MethodChannel('sarbagyastha.com.np/youtubePlayer')
-      ..invokeMethod('init');
+const MethodChannel('sarbagyastha.com.np/youtubePlayer')
+  ..invokeMethod('init');
 
 class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   _VideoProgressIndicatorState() {
@@ -702,15 +702,15 @@ class YoutubePlayer extends StatefulWidget {
 
   YoutubePlayer(
       {@required this.source,
-      @required this.quality,
-      this.aspectRatio = 16 / 9,
-      this.bufferedColor = Colors.pink,
-      this.playedColor = Colors.pink,
-      this.handleColor = Colors.pink,
-      this.placeHolder,
-      this.startAt,
-      this.showThumbnail = true,
-      this.loop = true});
+        @required this.quality,
+        this.aspectRatio = 16 / 9,
+        this.bufferedColor = Colors.pink,
+        this.playedColor = Colors.pink,
+        this.handleColor = Colors.pink,
+        this.placeHolder,
+        this.startAt,
+        this.showThumbnail = true,
+        this.loop = true});
 
   @override
   State<StatefulWidget> createState() {
@@ -787,6 +787,15 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     }
   }
 
+  @override
+  void dispose() {
+    if(_videoController!=null){
+      _videoController.setVolume(0.0);
+      _videoController.dispose();
+    }
+    super.dispose();
+  }
+
   static String getIdFromUrl(String url, [bool trimWhitespaces = true]) {
     if (url == null || url.length == 0) return null;
 
@@ -823,30 +832,30 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       decoration: BoxDecoration(
           color: Colors.black,
           image: DecorationImage(
-              image: widget.showThumbnail
+              image: widget.showThumbnail&&videoId!=""&&videoId!=null
                   ? NetworkImage(
-                      "https://i3.ytimg.com/vi/$videoId/sddefault.jpg")
-                  : NetworkImage(""),
+                  "https://i3.ytimg.com/vi/$videoId/sddefault.jpg")
+                  : AssetImage("assets/no_thumbnail.png"),
               fit: BoxFit.cover)),
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.width / widget.aspectRatio,
       child: showVideo
           ? Chewie(
-              _videoController,
-              aspectRatio: widget.aspectRatio,
-              autoPlay: true,
-              looping: widget.loop,
-              materialProgressColors: ChewieProgressColors(
-                bufferedColor: widget.bufferedColor,
-                playedColor: widget.playedColor,
-                handleColor: widget.handleColor,
-              ),
-              placeholder: widget.placeHolder,
-              startAt: widget.startAt,
-            )
+        _videoController,
+        aspectRatio: widget.aspectRatio,
+        autoPlay: true,
+        looping: widget.loop,
+        materialProgressColors: ChewieProgressColors(
+          bufferedColor: widget.bufferedColor,
+          playedColor: widget.playedColor,
+          handleColor: widget.handleColor,
+        ),
+        placeholder: widget.placeHolder,
+        startAt: widget.startAt,
+      )
           : Center(
-              child: CircularProgressIndicator(),
-            ),
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 
@@ -887,7 +896,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             if ((tempQuality = url.split(r'\",\"mimeType\":\"')[1])
                 .contains(r'\"qualityLabel\":\"')) {
               tempQuality =
-                  tempQuality.toString().split(r'\"qualityLabel\":\"')[1];
+              tempQuality.toString().split(r'\"qualityLabel\":\"')[1];
               tempQuality =
                   tempQuality.toString().split(r'\",\"projectionType\"').first;
             }

@@ -40,29 +40,43 @@ class _MyHomePageState extends State<MyHomePage> {
         body: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               YoutubePlayer(
                 source: id,
                 quality: YoutubeQuality.HD,
               ),
+              SizedBox(
+                height: 10.0,
+              ),
               Padding(
-                padding: const EdgeInsets.all(8.0),
+                padding: EdgeInsets.all(8.0),
                 child: TextFormField(
                   controller: _idController,
                   decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    hintText: "Enter youtube \<video id\> or \<link\>"
-                  ),
+                      border: OutlineInputBorder(),
+                      hintText: "Enter youtube \<video id\> or \<link\>"),
                 ),
               ),
-              RaisedButton(
-                onPressed: () {
-                  setState(() {
-                    id = _idController.text;
-                  });
-                },
-                child: Text("Play"),
-              ),
+              Padding(
+                padding: EdgeInsets.all(8.0),
+                child: InkWell(
+                  onTap: () {
+                    setState(() {
+                      id = _idController.text;
+                    });
+                  },
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 16.0,),
+                    color: Colors.pink,
+                    child: Text(
+                      "PLAY",
+                      style: TextStyle(fontSize: 18.0, color: Colors.white),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              )
             ],
           ),
         ));
