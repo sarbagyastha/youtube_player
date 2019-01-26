@@ -1,3 +1,7 @@
+## [0.7.2]&[0.7.1] - January 26, 2019.
+
+* Minor Fixes.
+
 ## [0.7.0] - January 26, 2019.
 
 * Video loads and plays lot more faster than in previous versions.

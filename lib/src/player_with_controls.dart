@@ -8,20 +8,23 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player/youtube_player.dart';
 
 class PlayerWithControls extends StatelessWidget {
-  PlayerWithControls({Key key, this.controlsColor, this.controlsBackgroundColor}) : super(key: key);
+  PlayerWithControls(
+      {Key key, this.controlsColor, this.controlsBackgroundColor})
+      : super(key: key);
   final Color controlsBackgroundColor;
   final Color controlsColor;
 
   @override
   Widget build(BuildContext context) {
-    final YoutubePlayerController chewieController = YoutubePlayerController.of(context);
+    final YoutubePlayerController chewieController =
+        YoutubePlayerController.of(context);
 
     return Center(
       child: Container(
         width: MediaQuery.of(context).size.width,
         child: AspectRatio(
           aspectRatio:
-          chewieController.aspectRatio ?? _calculateAspectRatio(context),
+              chewieController.aspectRatio ?? _calculateAspectRatio(context),
           child: _buildPlayerWithControls(chewieController, context),
         ),
       ),
@@ -51,18 +54,21 @@ class PlayerWithControls extends StatelessWidget {
   }
 
   Widget _buildControls(
-      BuildContext context,
-      YoutubePlayerController chewieController,
-      ) {
+    BuildContext context,
+    YoutubePlayerController chewieController,
+  ) {
     return chewieController.showControls
         ? chewieController.customControls != null
-        ? chewieController.customControls
-        : Theme.of(context).platform == TargetPlatform.android
-        ? MaterialControls(controlsColor: controlsColor,controlsBackgroundColor: controlsBackgroundColor,)
-        : CupertinoControls(
-      backgroundColor: Color.fromRGBO(41, 41, 41, 0.7),
-      iconColor: Color.fromARGB(255, 200, 200, 200),
-    )
+            ? chewieController.customControls
+            : Theme.of(context).platform == TargetPlatform.android
+                ? MaterialControls(
+                    controlsColor: controlsColor,
+                    controlsBackgroundColor: controlsBackgroundColor,
+                  )
+                : CupertinoControls(
+                    backgroundColor: Color.fromRGBO(41, 41, 41, 0.7),
+                    iconColor: Color.fromARGB(255, 200, 200, 200),
+                  )
         : Container();
   }
 

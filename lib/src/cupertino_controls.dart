@@ -84,10 +84,10 @@ class _CupertinoControlsState extends State<CupertinoControls> {
   }
 
   AnimatedOpacity _buildBottomBar(
-      Color backgroundColor,
-      Color iconColor,
-      double barHeight,
-      ) {
+    Color backgroundColor,
+    Color iconColor,
+    double barHeight,
+  ) {
     return AnimatedOpacity(
       opacity: _hideStuff ? 0.0 : 1.0,
       duration: Duration(milliseconds: 300),
@@ -111,22 +111,22 @@ class _CupertinoControlsState extends State<CupertinoControls> {
               ),
               child: chewieController.isLive
                   ? Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  _buildPlayPause(controller, iconColor, barHeight),
-                  _buildLive(iconColor),
-                ],
-              )
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: <Widget>[
+                        _buildPlayPause(controller, iconColor, barHeight),
+                        _buildLive(iconColor),
+                      ],
+                    )
                   : Row(
-                children: <Widget>[
-                  _buildSkipBack(iconColor, barHeight),
-                  _buildPlayPause(controller, iconColor, barHeight),
-                  _buildSkipForward(iconColor, barHeight),
-                  _buildPosition(iconColor),
-                  _buildProgressBar(),
-                  _buildRemaining(iconColor)
-                ],
-              ),
+                      children: <Widget>[
+                        _buildSkipBack(iconColor, barHeight),
+                        _buildPlayPause(controller, iconColor, barHeight),
+                        _buildSkipForward(iconColor, barHeight),
+                        _buildPosition(iconColor),
+                        _buildProgressBar(),
+                        _buildRemaining(iconColor)
+                      ],
+                    ),
             ),
           ),
         ),
@@ -145,11 +145,11 @@ class _CupertinoControlsState extends State<CupertinoControls> {
   }
 
   GestureDetector _buildExpandButton(
-      Color backgroundColor,
-      Color iconColor,
-      double barHeight,
-      double buttonPadding,
-      ) {
+    Color backgroundColor,
+    Color iconColor,
+    double barHeight,
+    double buttonPadding,
+  ) {
     return GestureDetector(
       onTap: _onExpandCollapse,
       child: AnimatedOpacity(
@@ -192,12 +192,12 @@ class _CupertinoControlsState extends State<CupertinoControls> {
         onTap: _latestValue != null && _latestValue.isPlaying
             ? _cancelAndRestartTimer
             : () {
-          _hideTimer?.cancel();
+                _hideTimer?.cancel();
 
-          setState(() {
-            _hideStuff = false;
-          });
-        },
+                setState(() {
+                  _hideStuff = false;
+                });
+              },
         child: Container(
           color: Colors.transparent,
         ),
@@ -206,12 +206,12 @@ class _CupertinoControlsState extends State<CupertinoControls> {
   }
 
   GestureDetector _buildMuteButton(
-      VideoPlayerController controller,
-      Color backgroundColor,
-      Color iconColor,
-      double barHeight,
-      double buttonPadding,
-      ) {
+    VideoPlayerController controller,
+    Color backgroundColor,
+    Color iconColor,
+    double barHeight,
+    double buttonPadding,
+  ) {
     return GestureDetector(
       onTap: () {
         _cancelAndRestartTimer();
@@ -258,10 +258,10 @@ class _CupertinoControlsState extends State<CupertinoControls> {
   }
 
   GestureDetector _buildPlayPause(
-      VideoPlayerController controller,
-      Color iconColor,
-      double barHeight,
-      ) {
+    VideoPlayerController controller,
+    Color iconColor,
+    double barHeight,
+  ) {
     return GestureDetector(
       onTap: _playPause,
       child: Container(
@@ -272,9 +272,7 @@ class _CupertinoControlsState extends State<CupertinoControls> {
           right: 6.0,
         ),
         child: Icon(
-          controller.value.isPlaying
-              ? Icons.pause
-              : Icons.play_arrow,
+          controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
           color: iconColor,
           size: 16.0,
         ),
@@ -284,7 +282,7 @@ class _CupertinoControlsState extends State<CupertinoControls> {
 
   Widget _buildPosition(Color iconColor) {
     final position =
-    _latestValue != null ? _latestValue.position : Duration(seconds: 0);
+        _latestValue != null ? _latestValue.position : Duration(seconds: 0);
 
     return Padding(
       padding: EdgeInsets.only(right: 12.0),
@@ -361,11 +359,11 @@ class _CupertinoControlsState extends State<CupertinoControls> {
   }
 
   Widget _buildTopBar(
-      Color backgroundColor,
-      Color iconColor,
-      double barHeight,
-      double buttonPadding,
-      ) {
+    Color backgroundColor,
+    Color iconColor,
+    double barHeight,
+    double buttonPadding,
+  ) {
     return Container(
       height: barHeight,
       margin: EdgeInsets.only(

@@ -133,78 +133,140 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                         switch (quality) {
                             case "240p":
                                 if(ytFiles.indexOfKey(242)>0){
-                                    Log.i(TAG,"Quality: 240p");
+                                    Log.i(TAG,"Quality: 240p WEBM");
                                     v = ytFiles.get(242).getUrl();
-                                }else{
-                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                }else if(ytFiles.indexOfKey(133)>0){
+                                    Log.i(TAG,"Quality: 240p MP4");
+                                    v = ytFiles.get(133).getUrl();
+                                }else if(ytFiles.indexOfKey(278)>0){
+                                    Log.i(TAG,"Quality: 144p WEBM [Adapted]");
                                     v = ytFiles.get(278).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p MP4 [Adapted]");
+                                    v = ytFiles.get(160).getUrl();
                                 }
                                 break;
                             case "360p":
                                 if(ytFiles.indexOfKey(243)>0){
-                                    Log.i(TAG,"Quality: 360p");
+                                    Log.i(TAG,"Quality: 360p WEBM");
                                     v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(134)>0){
+                                    Log.i(TAG,"Quality: 360p MP4");
+                                    v = ytFiles.get(134).getUrl();
                                 }else if(ytFiles.indexOfKey(242)>0){
-                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    Log.i(TAG,"Quality: 240p WEBM [Adapted]");
                                     v = ytFiles.get(242).getUrl();
-                                }else{
-                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                }else if(ytFiles.indexOfKey(133)>0){
+                                    Log.i(TAG,"Quality: 240p MP4 [Adapted]");
+                                    v = ytFiles.get(133).getUrl();
+                                }else if(ytFiles.indexOfKey(278)>0){
+                                    Log.i(TAG,"Quality: 144p WEBM [Adapted]");
                                     v = ytFiles.get(278).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p MP4 [Adapted]");
+                                    v = ytFiles.get(160).getUrl();
                                 }
                                 break;
                             case "480p":
                                 if(ytFiles.indexOfKey(244)>0){
-                                    Log.i(TAG,"Quality: 480p");
+                                    Log.i(TAG,"Quality: 480p WEBM");
                                     v = ytFiles.get(244).getUrl();
+                                }else if(ytFiles.indexOfKey(135)>0){
+                                    Log.i(TAG,"Quality: 480p MP4");
+                                    v = ytFiles.get(135).getUrl();
                                 }else if(ytFiles.indexOfKey(243)>0){
-                                    Log.i(TAG,"Quality: 360p [Adapted]");
+                                    Log.i(TAG,"Quality: 360p WEBM [Adapted]");
                                     v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(134)>0){
+                                    Log.i(TAG,"Quality: 360p MP4 [Adapted]");
+                                    v = ytFiles.get(134).getUrl();
                                 }else if(ytFiles.indexOfKey(242)>0){
-                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    Log.i(TAG,"Quality: 240p WEBM [Adapted]");
                                     v = ytFiles.get(242).getUrl();
-                                }else{
-                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                }else if(ytFiles.indexOfKey(133)>0){
+                                    Log.i(TAG,"Quality: 240p MP4 [Adapted]");
+                                    v = ytFiles.get(133).getUrl();
+                                }else if(ytFiles.indexOfKey(278)>0){
+                                    Log.i(TAG,"Quality: 144p WEBM [Adapted]");
                                     v = ytFiles.get(278).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p MP4 [Adapted]");
+                                    v = ytFiles.get(160).getUrl();
                                 }
                                 break;
                             case "720p":
                                 if(ytFiles.indexOfKey(247)>0){
-                                    System.out.println(ytFiles.get(247).getFormat());
-                                    Log.i(TAG,"Quality: 720p");
+                                    Log.i(TAG,"Quality: 720p WEBM");
                                     v = ytFiles.get(247).getUrl();
+                                }else if(ytFiles.indexOfKey(136)>0){
+                                    Log.i(TAG,"Quality: 720p MP4");
+                                    v = ytFiles.get(136).getUrl();
                                 }else if(ytFiles.indexOfKey(244)>0){
-                                    Log.i(TAG,"Quality: 480p [Adapted]");
+                                    Log.i(TAG,"Quality: 480p WEBM [Adapted]");
                                     v = ytFiles.get(244).getUrl();
+                                }else if(ytFiles.indexOfKey(135)>0){
+                                    Log.i(TAG,"Quality: 480p MP4 [Adapted]");
+                                    v = ytFiles.get(135).getUrl();
                                 }else if(ytFiles.indexOfKey(243)>0){
-                                    Log.i(TAG,"Quality: 360p [Adapted]");
+                                    Log.i(TAG,"Quality: 360p WEBM [Adapted]");
                                     v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(134)>0){
+                                    Log.i(TAG,"Quality: 360p MP4 [Adapted]");
+                                    v = ytFiles.get(134).getUrl();
                                 }else if(ytFiles.indexOfKey(242)>0){
-                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    Log.i(TAG,"Quality: 240p WEBM [Adapted]");
                                     v = ytFiles.get(242).getUrl();
-                                }else{
-                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                }else if(ytFiles.indexOfKey(133)>0){
+                                    Log.i(TAG,"Quality: 240p MP4 [Adapted]");
+                                    v = ytFiles.get(133).getUrl();
+                                }else if(ytFiles.indexOfKey(278)>0){
+                                    Log.i(TAG,"Quality: 144p WEBM [Adapted]");
                                     v = ytFiles.get(278).getUrl();
+                                }else if(ytFiles.indexOfKey(160)>0){
+                                    Log.i(TAG,"Quality: 144p MP4 [Adapted]");
+                                    v = ytFiles.get(160).getUrl();
+                                }else {
+                                    Log.i(TAG,"Quality: 360p MP4 [Adapted]");
+                                    v = ytFiles.get(18).getUrl();
                                 }
                                 break;
                             case "1080p":
                                 if(ytFiles.indexOfKey(248)>0){
-                                    Log.i(TAG,"Quality: 1080p");
+                                    Log.i(TAG,"Quality: 1080p WEBM");
                                     v = ytFiles.get(248).getUrl();
+                                }else if(ytFiles.indexOfKey(137)>0){
+                                    Log.i(TAG,"Quality: 1080p MP4");
+                                    v = ytFiles.get(137).getUrl();
                                 }else if(ytFiles.indexOfKey(247)>0){
-                                    Log.i(TAG,"Quality: 720p [Adapted]");
+                                    Log.i(TAG,"Quality: 720p WEBM [Adapted");
                                     v = ytFiles.get(247).getUrl();
+                                }else if(ytFiles.indexOfKey(136)>0){
+                                    Log.i(TAG,"Quality: 720p MP4 [Adapted]");
+                                    v = ytFiles.get(136).getUrl();
                                 }else if(ytFiles.indexOfKey(244)>0){
-                                    Log.i(TAG,"Quality: 480p [Adapted]");
+                                    Log.i(TAG,"Quality: 480p WEBM [Adapted]");
                                     v = ytFiles.get(244).getUrl();
+                                }else if(ytFiles.indexOfKey(135)>0){
+                                    Log.i(TAG,"Quality: 480p MP4 [Adapted]");
+                                    v = ytFiles.get(135).getUrl();
                                 }else if(ytFiles.indexOfKey(243)>0){
-                                    Log.i(TAG,"Quality: 360p [Adapted]");
+                                    Log.i(TAG,"Quality: 360p WEBM [Adapted]");
                                     v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(134)>0){
+                                    Log.i(TAG,"Quality: 360p MP4 [Adapted]");
+                                    v = ytFiles.get(134).getUrl();
                                 }else if(ytFiles.indexOfKey(242)>0){
-                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    Log.i(TAG,"Quality: 240p WEBM [Adapted]");
                                     v = ytFiles.get(242).getUrl();
-                                }else{
-                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                }else if(ytFiles.indexOfKey(133)>0){
+                                    Log.i(TAG,"Quality: 240p MP4 [Adapted]");
+                                    v = ytFiles.get(133).getUrl();
+                                }else if(ytFiles.indexOfKey(278)>0){
+                                    Log.i(TAG,"Quality: 144p WEBM [Adapted]");
                                     v = ytFiles.get(278).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p MP4 [Adapted]");
+                                    v = ytFiles.get(160).getUrl();
                                 }
                                 break;
                             default:

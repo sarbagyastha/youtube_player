@@ -5,12 +5,12 @@ import 'package:youtube_player/youtube_player.dart';
 
 class MaterialVideoProgressBar extends StatefulWidget {
   MaterialVideoProgressBar(
-      this.controller, {
-        ChewieProgressColors colors,
-        this.onDragEnd,
-        this.onDragStart,
-        this.onDragUpdate,
-      }) : colors = colors ?? ChewieProgressColors();
+    this.controller, {
+    ChewieProgressColors colors,
+    this.onDragEnd,
+    this.onDragStart,
+    this.onDragUpdate,
+  }) : colors = colors ?? ChewieProgressColors();
 
   final VideoPlayerController controller;
   final ChewieProgressColors colors;
@@ -62,18 +62,18 @@ class _VideoProgressBarState extends State<MaterialVideoProgressBar> {
       child: (controller.value.hasError)
           ? Text(controller.value.errorDescription)
           : Center(
-        child: Container(
-          height: MediaQuery.of(context).size.height / 2,
-          width: MediaQuery.of(context).size.width,
-          color: Colors.transparent,
-          child: CustomPaint(
-            painter: _ProgressBarPainter(
-              controller.value,
-              widget.colors,
+              child: Container(
+                height: MediaQuery.of(context).size.height / 2,
+                width: MediaQuery.of(context).size.width,
+                color: Colors.transparent,
+                child: CustomPaint(
+                  painter: _ProgressBarPainter(
+                    controller.value,
+                    widget.colors,
+                  ),
+                ),
+              ),
             ),
-          ),
-        ),
-      ),
       onHorizontalDragStart: (DragStartDetails details) {
         if (!controller.value.initialized) {
           return;

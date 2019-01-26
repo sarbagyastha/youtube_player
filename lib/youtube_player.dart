@@ -37,7 +37,6 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:screen/screen.dart';
 import 'package:youtube_player/yp_chewie.dart';
 
 enum YoutubeQuality { LOW, MEDIUM, HIGH, HD, FHD }

@@ -8,10 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:youtube_player/youtube_player.dart';
 
 class MaterialControls extends StatefulWidget {
-  MaterialControls(
-      {Key key,
-      this.controlsColor,
-      this.controlsBackgroundColor})
+  MaterialControls({Key key, this.controlsColor, this.controlsBackgroundColor})
       : super(key: key);
   final Color controlsColor;
   final Color controlsBackgroundColor;

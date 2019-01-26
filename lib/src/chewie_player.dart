@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:screen/screen.dart';
 
-
 /// A Video Player with Material and Cupertino skins.
 ///
 /// `video_player` is pretty low level. Chewie wraps it in a friendly skin to
@@ -231,10 +230,10 @@ class YoutubePlayerController extends ChangeNotifier {
   final bool isLive;
 
   static YoutubePlayerController of(BuildContext context) {
-    final _YoutubePlayerControllerProvider YoutubePlayerControllerProvider =
+    final _YoutubePlayerControllerProvider youtubePlayerControllerProvider =
         context.inheritFromWidgetOfExactType(_YoutubePlayerControllerProvider);
 
-    return YoutubePlayerControllerProvider.controller;
+    return youtubePlayerControllerProvider.controller;
   }
 
   bool _isFullScreen = false;
@@ -262,8 +261,8 @@ class YoutubePlayerController extends ChangeNotifier {
     }
 
     if (fullScreenByDefault) {
-      videoPlayerController.addListener(() async {
-        if (await videoPlayerController.value.isPlaying && !_isFullScreen) {
+      videoPlayerController.addListener(() {
+        if (videoPlayerController.value.isPlaying && !_isFullScreen) {
           enterFullScreen();
         }
       });
