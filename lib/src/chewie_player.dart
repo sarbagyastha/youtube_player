@@ -1,11 +1,13 @@
 import 'dart:async';
-import 'package:screen/screen.dart';
+
+import 'package:youtube_player/youtube_player.dart';
+
 import 'chewie_progress_colors.dart';
 import 'player_with_controls.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:youtube_player/youtube_player.dart';
+import 'package:screen/screen.dart';
 
 
 /// A Video Player with Material and Cupertino skins.
@@ -13,8 +15,174 @@ import 'package:youtube_player/youtube_player.dart';
 /// `video_player` is pretty low level. Chewie wraps it in a friendly skin to
 /// make it easy to use!
 class Chewie extends StatefulWidget {
-  /// The Controller for the Video you want to play
-  final VideoPlayerController controller;
+  Chewie({
+    Key key,
+    this.controller,
+    this.controlsColor,
+    this.controlsBackgroundColor = const Color(0x33000000),
+  })  : assert(controller != null, 'You must provide a chewie controller'),
+        super(key: key);
+
+  /// The [YoutubePlayerController]
+  final YoutubePlayerController controller;
+  final Color controlsColor;
+  final Color controlsBackgroundColor;
+
+  @override
+  ChewieState createState() {
+    return ChewieState();
+  }
+}
+
+class ChewieState extends State<Chewie> {
+  bool _isFullScreen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(listener);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(listener);
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(Chewie oldWidget) {
+    if (oldWidget.controller != widget.controller) {
+      widget.controller.addListener(listener);
+    }
+    super.didUpdateWidget(oldWidget);
+  }
+
+  void listener() async {
+    if (widget.controller.isFullScreen && !_isFullScreen) {
+      _isFullScreen = true;
+      await _pushFullScreenWidget(context);
+    } else if (_isFullScreen) {
+      Navigator.of(context).pop();
+      _isFullScreen = false;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.controller.allowedScreenSleep) {
+      Screen.keepOn(true);
+    }
+    return _YoutubePlayerControllerProvider(
+      controller: widget.controller,
+      child: PlayerWithControls(
+        controlsBackgroundColor: widget.controlsBackgroundColor,
+        controlsColor: widget.controlsColor,
+      ),
+    );
+  }
+
+  Widget _buildFullScreenVideo(
+      BuildContext context, Animation<double> animation) {
+    return Scaffold(
+      resizeToAvoidBottomPadding: false,
+      body: Container(
+        alignment: Alignment.center,
+        color: Colors.black,
+        child: _YoutubePlayerControllerProvider(
+          controller: widget.controller,
+          child: PlayerWithControls(
+            controlsBackgroundColor: widget.controlsBackgroundColor,
+            controlsColor: widget.controlsColor,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _fullScreenRoutePageBuilder(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget child) {
+        return _buildFullScreenVideo(context, animation);
+      },
+    );
+  }
+
+  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final TransitionRoute<Null> route = PageRouteBuilder<Null>(
+      settings: RouteSettings(isInitialRoute: false),
+      pageBuilder: _fullScreenRoutePageBuilder,
+    );
+
+    SystemChrome.setEnabledSystemUIOverlays([]);
+    if (isAndroid) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
+
+    if (!widget.controller.allowedScreenSleep) {
+      Screen.keepOn(true);
+    }
+
+    await Navigator.of(context).push(route);
+    _isFullScreen = false;
+    widget.controller.exitFullScreen();
+
+    bool isKeptOn = await Screen.isKeptOn;
+    if (isKeptOn) {
+      Screen.keepOn(false);
+    }
+
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+      DeviceOrientation.landscapeLeft,
+      DeviceOrientation.landscapeRight,
+    ]);
+  }
+}
+
+/// The YoutubePlayerController is used to configure and drive the Chewie Player
+/// Widgets. It provides methods to control playback, such as [pause] and
+/// [play], as well as methods that control the visual appearance of the player,
+/// such as [enterFullScreen] or [exitFullScreen].
+///
+/// In addition, you can listen to the YoutubePlayerController for presentational
+/// changes, such as entering and exiting full screen mode. To listen for
+/// changes to the playback, such as a change to the seek position of the
+/// player, please use the standard information provided by the
+/// `VideoPlayerController`.
+class YoutubePlayerController extends ChangeNotifier {
+  YoutubePlayerController({
+    this.videoPlayerController,
+    this.aspectRatio,
+    this.autoInitialize = false,
+    this.autoPlay = false,
+    this.startAt,
+    this.looping = false,
+    this.fullScreenByDefault = false,
+    this.cupertinoProgressColors,
+    this.materialProgressColors,
+    this.placeholder,
+    this.showControls = true,
+    this.customControls,
+    this.allowedScreenSleep = false,
+    this.isLive = false,
+  }) : assert(videoPlayerController != null,
+            'You must provide a controller to play a video') {
+    _initialize();
+  }
+
+  /// The controller for the video you want to play
+  final VideoPlayerController videoPlayerController;
 
   /// Initialize the Video on Startup. This will prep the video for playback.
   final bool autoInitialize;
@@ -30,6 +198,10 @@ class Chewie extends StatefulWidget {
 
   /// Whether or not to show the controls
   final bool showControls;
+
+  /// Defines customised controls. Check [MaterialControls] or
+  /// [CupertinoControls] for reference.
+  final Widget customControls;
 
   /// The Aspect Ratio of the Video. Important to get the correct size of the
   /// video!
@@ -49,190 +221,103 @@ class Chewie extends StatefulWidget {
   /// or played.
   final Widget placeholder;
 
-  Chewie(
-      this.controller, {
-        Key key,
-        this.aspectRatio,
-        this.autoInitialize = false,
-        this.autoPlay = false,
-        this.startAt,
-        this.looping = false,
-        this.cupertinoProgressColors,
-        this.materialProgressColors,
-        this.placeholder,
-        this.showControls = true,
-      })  : assert(controller != null,
-  'You must provide a controller to play a video'),
-        super(key: key);
+  /// Defines if the player will start in fullscreen when play is pressed
+  final bool fullScreenByDefault;
 
-  @override
-  State<StatefulWidget> createState() {
-    return new _ChewiePlayerState();
+  /// Defines if the player will sleep in fullscreen or not
+  final bool allowedScreenSleep;
+
+  /// Defines if the controls should be for live stream video
+  final bool isLive;
+
+  static YoutubePlayerController of(BuildContext context) {
+    final _YoutubePlayerControllerProvider YoutubePlayerControllerProvider =
+        context.inheritFromWidgetOfExactType(_YoutubePlayerControllerProvider);
+
+    return YoutubePlayerControllerProvider.controller;
+  }
+
+  bool _isFullScreen = false;
+
+  bool get isFullScreen => _isFullScreen;
+
+  Future _initialize() async {
+    await videoPlayerController.setLooping(looping);
+
+    if ((autoInitialize || autoPlay) &&
+        !videoPlayerController.value.initialized) {
+      await videoPlayerController.initialize();
+    }
+
+    if (autoPlay) {
+      if (fullScreenByDefault) {
+        enterFullScreen();
+      }
+
+      await videoPlayerController.play();
+    }
+
+    if (startAt != null) {
+      await videoPlayerController.seekTo(startAt);
+    }
+
+    if (fullScreenByDefault) {
+      videoPlayerController.addListener(() async {
+        if (await videoPlayerController.value.isPlaying && !_isFullScreen) {
+          enterFullScreen();
+        }
+      });
+    }
+  }
+
+  void enterFullScreen() {
+    _isFullScreen = true;
+    notifyListeners();
+  }
+
+  void exitFullScreen() {
+    _isFullScreen = false;
+    notifyListeners();
+  }
+
+  void toggleFullScreen() {
+    _isFullScreen = !_isFullScreen;
+    notifyListeners();
+  }
+
+  Future<void> play() async {
+    await videoPlayerController.play();
+  }
+
+  Future<void> setLooping(bool looping) async {
+    await videoPlayerController.setLooping(looping);
+  }
+
+  Future<void> pause() async {
+    await videoPlayerController.pause();
+  }
+
+  Future<void> seekTo(Duration moment) async {
+    await videoPlayerController.seekTo(moment);
+  }
+
+  Future<void> setVolume(double volume) async {
+    await videoPlayerController.setVolume(volume);
   }
 }
 
-class _ChewiePlayerState extends State<Chewie> {
-  VideoPlayerController _controller;
-  // Whether it was on landscape before to not trigger it twice
-  bool wasLandscape = false;
-  double playerHeight;
-  // Fullscreen button pressed
-  bool leaveFullscreen = false;
+class _YoutubePlayerControllerProvider extends InheritedWidget {
+  const _YoutubePlayerControllerProvider({
+    Key key,
+    @required this.controller,
+    @required Widget child,
+  })  : assert(controller != null),
+        assert(child != null),
+        super(key: key, child: child);
 
-  BuildContext videoContext;
-
-  @override
-  Widget build(BuildContext context) {
-    return OrientationBuilder(builder: (BuildContext context, Orientation orientation){
-      if(orientation == Orientation.portrait){
-        Screen.keepOn(true);
-        return new Container(
-          height: playerHeight,
-          child: new PlayerWithControls(
-            controller: _controller,
-            onExpandCollapse: () => _pushFullScreenWidget(context),
-            aspectRatio: widget.aspectRatio ?? _calculateAspectRatio(context),
-            cupertinoProgressColors: widget.cupertinoProgressColors,
-            materialProgressColors: widget.materialProgressColors,
-            placeholder: widget.placeholder,
-            autoPlay: widget.autoPlay,
-            showControls: widget.showControls,
-          ),
-        );
-      }else{
-        Screen.keepOn(true);
-        return new Container(
-          height: 0.0,
-          child: new PlayerWithControls(
-            controller: _controller,
-            onExpandCollapse: () => _pushFullScreenWidget(context),
-            aspectRatio: widget.aspectRatio ?? _calculateAspectRatio(context),
-            cupertinoProgressColors: widget.cupertinoProgressColors,
-            materialProgressColors: widget.materialProgressColors,
-            placeholder: widget.placeholder,
-            autoPlay: widget.autoPlay,
-            showControls: widget.showControls,
-          ),
-        );
-      }
-    });
-  }
+  final YoutubePlayerController controller;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = widget.controller;
-    _initialize();
-  }
-
-  Widget _buildFullScreenVideo(
-      BuildContext context, Animation<double> animation) {
-    videoContext = context;
-    return new Scaffold(
-      resizeToAvoidBottomPadding: false,
-      body: new Container(
-        alignment: Alignment.center,
-        color: Colors.black,
-        child: new PlayerWithControls(
-          controller: _controller,
-          onExpandCollapse: () {
-            new Future<dynamic>.value(Navigator.of(context).pop());
-            leaveFullscreen = true;
-          },
-          aspectRatio: widget.aspectRatio ?? _calculateAspectRatio(context),
-          fullScreen: true,
-          cupertinoProgressColors: widget.cupertinoProgressColors,
-          materialProgressColors: widget.materialProgressColors,
-        ),
-      ),
-    );
-  }
-
-  Widget _fullScreenRoutePageBuilder(
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      ) {
-    return new AnimatedBuilder(
-      animation: animation,
-      builder: (BuildContext context, Widget child) {
-        return _buildFullScreenVideo(context, animation);
-      },
-    );
-  }
-
-  Future _initialize() async {
-    await _controller.setLooping(widget.looping);
-
-    if (widget.autoInitialize || widget.autoPlay) {
-      await _controller.initialize();
-    }
-
-    if (widget.autoPlay) {
-      await _controller.play();
-    }
-
-    if (widget.startAt != null) {
-      await _controller.seekTo(widget.startAt);
-    }
-  }
-
-  @override
-  void didUpdateWidget(Chewie oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (widget.controller.dataSource != _controller.dataSource) {
-      _controller.dispose();
-      _controller = widget.controller;
-      _initialize();
-    }
-  }
-
-  @override
-  dispose() {
-    super.dispose();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.landscapeRight,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
-  }
-
-  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
-    leaveFullscreen = false;
-    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
-    final TransitionRoute<Null> route = new PageRouteBuilder<Null>(
-      settings: new RouteSettings(isInitialRoute: false),
-      pageBuilder: _fullScreenRoutePageBuilder,
-    );
-
-    SystemChrome.setEnabledSystemUIOverlays([]);
-    if (isAndroid) {
-      SystemChrome.setPreferredOrientations([
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-    }
-
-    await Navigator.of(context).push(route);
-
-    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ]);
-  }
-
-  double _calculateAspectRatio(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final width = size.width;
-    final height = size.height;
-
-    return width > height ? width / height : height / width;
-  }
+  bool updateShouldNotify(_YoutubePlayerControllerProvider old) =>
+      controller != old.controller;
 }

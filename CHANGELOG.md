@@ -1,3 +1,12 @@
+## [0.7.0] - January 26, 2019.
+
+* Video loads and plays lot more faster than in previous versions.
+* Availability of controller outside the player, for in-depth customizations and events access [See Example](https://github.com/sarbagyastha/youtube_player/blob/master/example/lib/main.dart)
+* (FIXED) Aspect ratio and orientation problem in videos.
+* (UNDER THE HOOD) Optimized Youtube Stream Link generation.
+* (UNDER THE HOOD) Reduced dependencies. Significant reduction in code reference.
+* Added controls customization.
+
 ## [0.6.1] - January 11, 2019.
 
 * (FIXED) Video continuing to play on background. Thanks to [@ParthAggarwal1996](https://github.com/sarbagyastha/youtube_player/issues/3) for raising the issue.

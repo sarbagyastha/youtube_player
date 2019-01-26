@@ -34,13 +34,17 @@
 
 import 'dart:io';
 import 'dart:async';
-import 'chewie.dart';
-import 'package:http/http.dart' as http;
 import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:screen/screen.dart';
+import 'package:youtube_player/yp_chewie.dart';
 
 enum YoutubeQuality { LOW, MEDIUM, HIGH, HD, FHD }
+
+final MethodChannel _channel =
+    const MethodChannel('sarbagyastha.com.np/youtubePlayer')
+      ..invokeMethod('init');
 
 class DurationRange {
   DurationRange(this.start, this.end);
@@ -115,7 +119,7 @@ class VideoPlayerValue {
 
   bool get initialized => duration != null;
   bool get hasError => errorDescription != null;
-  double get aspectRatio => size.width / size.height;
+  double get aspectRatio => size != null ? size.width / size.height : 1.0;
 
   VideoPlayerValue copyWith({
     Duration duration,
@@ -233,6 +237,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       case DataSourceType.file:
         dataSourceDescription = <String, dynamic>{'uri': dataSource};
     }
+    // https://github.com/flutter/flutter/issues/26431
+    // ignore: strong_mode_implicit_dynamic_method
     final Map<dynamic, dynamic> response = await _channel.invokeMethod(
       'create',
       dataSourceDescription,
@@ -307,6 +313,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
         _isDisposed = true;
         _timer?.cancel();
         await _eventSubscription?.cancel();
+        // https://github.com/flutter/flutter/issues/26431
+        // ignore: strong_mode_implicit_dynamic_method
         await _channel.invokeMethod(
           'dispose',
           <String, dynamic>{'textureId': _textureId},
@@ -337,6 +345,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (!value.initialized || _isDisposed) {
       return;
     }
+    // https://github.com/flutter/flutter/issues/26431
+    // ignore: strong_mode_implicit_dynamic_method
     _channel.invokeMethod(
       'setLooping',
       <String, dynamic>{'textureId': _textureId, 'looping': value.isLooping},
@@ -348,13 +358,15 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       return;
     }
     if (value.isPlaying) {
+      // https://github.com/flutter/flutter/issues/26431
+      // ignore: strong_mode_implicit_dynamic_method
       await _channel.invokeMethod(
         'play',
         <String, dynamic>{'textureId': _textureId},
       );
       _timer = Timer.periodic(
         const Duration(milliseconds: 500),
-            (Timer timer) async {
+        (Timer timer) async {
           if (_isDisposed) {
             return;
           }
@@ -367,6 +379,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       );
     } else {
       _timer?.cancel();
+      // https://github.com/flutter/flutter/issues/26431
+      // ignore: strong_mode_implicit_dynamic_method
       await _channel.invokeMethod(
         'pause',
         <String, dynamic>{'textureId': _textureId},
@@ -378,6 +392,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     if (!value.initialized || _isDisposed) {
       return;
     }
+    // https://github.com/flutter/flutter/issues/26431
+    // ignore: strong_mode_implicit_dynamic_method
     await _channel.invokeMethod(
       'setVolume',
       <String, dynamic>{'textureId': _textureId, 'volume': value.volume},
@@ -390,6 +406,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       return null;
     }
     return Duration(
+      // https://github.com/flutter/flutter/issues/26431
+      // ignore: strong_mode_implicit_dynamic_method
       milliseconds: await _channel.invokeMethod(
         'position',
         <String, dynamic>{'textureId': _textureId},
@@ -406,6 +424,8 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
     } else if (moment < const Duration()) {
       moment = const Duration();
     }
+    // https://github.com/flutter/flutter/issues/26431
+    // ignore: strong_mode_implicit_dynamic_method
     await _channel.invokeMethod('seekTo', <String, dynamic>{
       'textureId': _textureId,
       'location': moment.inMilliseconds,
@@ -590,11 +610,11 @@ class _VideoScrubberState extends State<_VideoScrubber> {
 /// that will also detect the gestures.
 class VideoProgressIndicator extends StatefulWidget {
   VideoProgressIndicator(
-      this.controller, {
-        VideoProgressColors colors,
-        this.allowScrubbing,
-        this.padding = const EdgeInsets.only(top: 5.0),
-      }) : colors = colors ?? VideoProgressColors();
+    this.controller, {
+    VideoProgressColors colors,
+    this.allowScrubbing,
+    this.padding = const EdgeInsets.only(top: 5.0),
+  }) : colors = colors ?? VideoProgressColors();
 
   final VideoPlayerController controller;
   final VideoProgressColors colors;
@@ -604,10 +624,6 @@ class VideoProgressIndicator extends StatefulWidget {
   @override
   _VideoProgressIndicatorState createState() => _VideoProgressIndicatorState();
 }
-
-final MethodChannel _channel =
-const MethodChannel('sarbagyastha.com.np/youtubePlayer')
-  ..invokeMethod('init');
 
 class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   _VideoProgressIndicatorState() {
@@ -622,6 +638,7 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   VoidCallback listener;
 
   VideoPlayerController get controller => widget.controller;
+
   VideoProgressColors get colors => widget.colors;
 
   @override
@@ -688,6 +705,8 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   }
 }
 
+typedef YPCallBack(YoutubePlayerController controller);
+
 class YoutubePlayer extends StatefulWidget {
   final String source;
   final YoutubeQuality quality;
@@ -695,22 +714,34 @@ class YoutubePlayer extends StatefulWidget {
   final Color bufferedColor;
   final Color playedColor;
   final Color handleColor;
+  final Color controlsColor;
+  final Color controlsBackgroundColor;
   final Widget placeHolder;
   final Duration startAt;
   final bool showThumbnail;
-  final bool loop;
+  final bool keepScreenOn;
+  final bool autoInitialize;
+  final bool showControls;
+  final bool fullScreen;
+  final YPCallBack callbackController;
 
   YoutubePlayer(
       {@required this.source,
-        @required this.quality,
-        this.aspectRatio = 16 / 9,
-        this.bufferedColor = Colors.pink,
-        this.playedColor = Colors.pink,
-        this.handleColor = Colors.pink,
-        this.placeHolder,
-        this.startAt,
-        this.showThumbnail = true,
-        this.loop = true});
+      @required this.quality,
+      this.aspectRatio = 16 / 9,
+      this.bufferedColor = Colors.white,
+      this.playedColor = Colors.pink,
+      this.handleColor = Colors.pink,
+      this.controlsColor = Colors.white,
+      this.controlsBackgroundColor = const Color(0x33000000),
+      this.placeHolder,
+      this.startAt,
+      this.showThumbnail = true,
+      this.keepScreenOn = true,
+      this.autoInitialize = true,
+      this.showControls = true,
+      this.fullScreen = false,
+      this.callbackController});
 
   @override
   State<StatefulWidget> createState() {
@@ -720,143 +751,72 @@ class YoutubePlayer extends StatefulWidget {
 
 class _YoutubePlayerState extends State<YoutubePlayer> {
   VideoPlayerController _videoController;
-  Map url;
-  bool showVideo = false;
-  List urls = <String>[];
-  String quality = "";
-  String currentVideoId;
+  YoutubePlayerController _youtubePlayerControllerController;
   String videoId = "";
 
   @override
   void initState() {
-    super.initState();
     if (widget.source.contains("http")) {
       videoId = getIdFromUrl(widget.source);
     } else {
       videoId = widget.source;
     }
-    setState(() {
-      quality = qualityMapping(widget.quality);
-    });
-    loadUrl();
+    _videoController = VideoPlayerController.network(
+        videoId + "sarbagya" + qualityMapping(widget.quality));
+    super.initState();
   }
-
-  loadUrl() async {
-    try {
-      currentVideoId = videoId;
-      quality = qualityMapping(widget.quality);
-      url = await getYoutubeUrls(videoId);
-      if (url[quality] != null) {
-        _videoController = VideoPlayerController.network(
-            url[quality] + "sarbagya" + url['aac']);
-        setState(() {
-          showVideo = true;
-        });
-      } else {
-        quality = "480p";
-        if (url[quality] != null) {
-          _videoController = VideoPlayerController.network(
-              url[quality] + "sarbagya" + url['aac']);
-          setState(() {
-            showVideo = true;
-          });
-        } else {
-          quality = "360p";
-          if (url[quality] != null) {
-            _videoController = VideoPlayerController.network(
-                url[quality] + "sarbagya" + url['aac']);
-            setState(() {
-              showVideo = true;
-            });
-          } else {
-            quality = "240p";
-            if (url[quality] != null) {
-              _videoController = VideoPlayerController.network(
-                  url[quality] + "sarbagya" + url['aac']);
-              setState(() {
-                showVideo = true;
-              });
-            } else {
-              throw Exception("Video Source Not Found");
-            }
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint(e.toString());
-    }
-  }
-
-  @override
-  void dispose() {
-    if(_videoController!=null){
-      _videoController.setVolume(0.0);
-      _videoController.dispose();
-    }
-    super.dispose();
-  }
-
-  static String getIdFromUrl(String url, [bool trimWhitespaces = true]) {
-    if (url == null || url.length == 0) return null;
-
-    if (trimWhitespaces) url = url.trim();
-
-    for (var exp in _regexps) {
-      Match match = exp.firstMatch(url);
-      if (match != null && match.groupCount >= 1) return match.group(1);
-    }
-
-    return null;
-  }
-
-  static List<RegExp> _regexps = [
-    new RegExp(
-        r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
-    new RegExp(
-        r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
-    new RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
-  ];
 
   @override
   Widget build(BuildContext context) {
     if (widget.source.contains("http")) {
-      videoId = getIdFromUrl(widget.source);
+      if (getIdFromUrl(widget.source) != videoId) {
+        _youtubePlayerControllerController.pause();
+        videoId = getIdFromUrl(widget.source);
+        _videoController = VideoPlayerController.network(
+            videoId + "sarbagya" + qualityMapping(widget.quality));
+      }
     } else {
-      videoId = widget.source;
+      if (widget.source != videoId) {
+        _youtubePlayerControllerController.pause();
+        videoId = widget.source;
+        _videoController = VideoPlayerController.network(
+            videoId + "sarbagya" + qualityMapping(widget.quality));
+      }
     }
-    print("Youtube Video Id: $videoId");
-    if (currentVideoId != videoId) {
-      loadUrl();
-    }
-    return Container(
-      decoration: BoxDecoration(
-          color: Colors.black,
-          image: DecorationImage(
-              image: widget.showThumbnail&&videoId!=""&&videoId!=null
-                  ? NetworkImage(
-                  "https://i3.ytimg.com/vi/$videoId/sddefault.jpg")
-                  : AssetImage("assets/no_thumbnail.png"),
-              fit: BoxFit.cover)),
-      width: MediaQuery.of(context).size.width,
-      height: MediaQuery.of(context).size.width / widget.aspectRatio,
-      child: showVideo
-          ? Chewie(
-        _videoController,
-        aspectRatio: widget.aspectRatio,
-        autoPlay: true,
-        looping: widget.loop,
-        materialProgressColors: ChewieProgressColors(
-          bufferedColor: widget.bufferedColor,
-          playedColor: widget.playedColor,
-          handleColor: widget.handleColor,
-        ),
-        placeholder: widget.placeHolder,
-        startAt: widget.startAt,
-      )
-          : Center(
-        child: CircularProgressIndicator(),
+    _youtubePlayerControllerController = YoutubePlayerController(
+      videoPlayerController: _videoController,
+      aspectRatio: widget.aspectRatio,
+      autoPlay: true,
+      startAt: widget.startAt,
+      allowedScreenSleep: !widget.keepScreenOn,
+      autoInitialize: widget.autoInitialize,
+      showControls: widget.showControls,
+      fullScreenByDefault: widget.fullScreen,
+      materialProgressColors: ChewieProgressColors(
+        bufferedColor: widget.bufferedColor,
+        playedColor: widget.playedColor,
+        handleColor: widget.handleColor,
       ),
+      placeholder: widget.placeHolder,
     );
+    widget.callbackController(_youtubePlayerControllerController);
+    print("Youtube Video Id: $videoId");
+    return Container(
+        decoration: BoxDecoration(
+            color: Colors.black,
+            image: DecorationImage(
+                image: widget.showThumbnail && videoId != "" && videoId != null
+                    ? NetworkImage(
+                        "https://i3.ytimg.com/vi/$videoId/sddefault.jpg")
+                    : AssetImage("assets/no_thumbnail.png"),
+                fit: BoxFit.cover)),
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.width / widget.aspectRatio,
+        child: Chewie(
+          controller: _youtubePlayerControllerController,
+          controlsColor: widget.controlsColor,
+          controlsBackgroundColor: widget.controlsBackgroundColor,
+        ));
   }
 
   String qualityMapping(YoutubeQuality quality) {
@@ -876,45 +836,24 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     }
   }
 
-  Future<Map> getYoutubeUrls(String youtubeId) async {
-    var rawURLs = <String>[];
-    var tempUrl;
-    var tempDecodedUrl;
-    var tempQuality;
-    var currentQuality = "";
-    Map youtubeUrls = {};
-    try {
-      var result = await http.get('https://www.youtube.com/watch?v=$youtubeId');
-      rawURLs = result.body.toString().split(r'\"url\":\"');
-      rawURLs.forEach((url) {
-        if (url.contains("mimeType")) {
-          tempUrl = url.split(r'\",\"mimeType\":\"').first;
-          if (tempUrl.contains('mime=video%2Fmp4')) {
-            tempDecodedUrl =
-                tempUrl.replaceAll(r'\u0026', '&').replaceAll(r'\', '');
+  String getIdFromUrl(String url, [bool trimWhitespaces = true]) {
+    if (url == null || url.length == 0) return null;
 
-            if ((tempQuality = url.split(r'\",\"mimeType\":\"')[1])
-                .contains(r'\"qualityLabel\":\"')) {
-              tempQuality =
-              tempQuality.toString().split(r'\"qualityLabel\":\"')[1];
-              tempQuality =
-                  tempQuality.toString().split(r'\",\"projectionType\"').first;
-            }
-            if (currentQuality != tempQuality) {
-              youtubeUrls[tempQuality] = tempDecodedUrl;
-              currentQuality = tempQuality;
-            }
-          }
-          if (tempUrl.contains('mime=audio%2Fmp4')) {
-            youtubeUrls['aac'] =
-                tempUrl.replaceAll(r'\u0026', '&').replaceAll(r'\', '');
-          }
-        }
-      });
-      return youtubeUrls;
-    } catch (e) {
-      print(e.toString());
-      return Map();
+    if (trimWhitespaces) url = url.trim();
+
+    for (var exp in _regexps) {
+      Match match = exp.firstMatch(url);
+      if (match != null && match.groupCount >= 1) return match.group(1);
     }
+
+    return null;
   }
+
+  List<RegExp> _regexps = [
+    new RegExp(
+        r"^https:\/\/(?:www\.|m\.)?youtube\.com\/watch\?v=([_\-a-zA-Z0-9]{11}).*$"),
+    new RegExp(
+        r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
+    new RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
+  ];
 }

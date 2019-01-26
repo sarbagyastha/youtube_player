@@ -1,5 +1,6 @@
 # youtube_player_example
 
+[More Detailed Example](https://github.com/sarbagyastha/youtube_player/blob/master/example/lib/main.dart)
 
 ```dart
 class _MyHomePageState extends State<MyHomePage> {

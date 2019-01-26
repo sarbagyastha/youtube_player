@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.2.1'
+        classpath 'com.android.tools.build:gradle:3.3.0'
     }
 }
 
@@ -16,6 +16,7 @@ rootProject.allprojects {
     repositories {
         google()
         jcenter()
+        maven { url "https://jitpack.io" }
     }
 }
 
@@ -42,5 +43,6 @@ android {
         implementation 'com.google.android.exoplayer:exoplayer-hls:2.9.1'
         implementation 'com.google.android.exoplayer:exoplayer-dash:2.9.1'
         implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.9.1'
+        implementation 'com.github.HaarigerHarald:android-youtubeExtractor:master-SNAPSHOT'
     }
 }

@@ -37,16 +37,20 @@ package np.com.sarbagyastha.youtubeplayer;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_ALL;
 import static com.google.android.exoplayer2.Player.REPEAT_MODE_OFF;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
+import android.util.Log;
+import android.util.SparseArray;
 import android.view.Surface;
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.Player.*;
+import com.google.android.exoplayer2.Player.DefaultEventListener;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
@@ -65,6 +69,10 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
+
+import at.huber.youtubeExtractor.VideoMeta;
+import at.huber.youtubeExtractor.YouTubeExtractor;
+import at.huber.youtubeExtractor.YtFile;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
@@ -74,13 +82,17 @@ import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.view.FlutterNativeView;
 import io.flutter.view.TextureRegistry;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class YoutubePlayerPlugin implements MethodCallHandler {
+
+    private static final String TAG = "YoutubePlayerPlugin";
 
     private static class YoutubePlayer {
 
@@ -105,30 +117,120 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
             this.eventChannel = eventChannel;
             this.textureEntry = textureEntry;
 
+            String[] splittedDataSource = dataSource.split("sarbagya");
+            loadStreamLinks(context, "https://www.youtube.com/watch?v=" + splittedDataSource[0], splittedDataSource[1], result);
+        }
+
+        @SuppressLint("StaticFieldLeak")
+        private void loadStreamLinks(Context context, String url, String quality, Result result){
             TrackSelector trackSelector = new DefaultTrackSelector();
             exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
+            new YouTubeExtractor(context) {
+                @Override
+                public void onExtractionComplete(SparseArray<YtFile> ytFiles, VideoMeta vMeta) {
+                    String a,v;
+                    if (ytFiles != null) {
+                        switch (quality) {
+                            case "240p":
+                                if(ytFiles.indexOfKey(242)>0){
+                                    Log.i(TAG,"Quality: 240p");
+                                    v = ytFiles.get(242).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                    v = ytFiles.get(278).getUrl();
+                                }
+                                break;
+                            case "360p":
+                                if(ytFiles.indexOfKey(243)>0){
+                                    Log.i(TAG,"Quality: 360p");
+                                    v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(242)>0){
+                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    v = ytFiles.get(242).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                    v = ytFiles.get(278).getUrl();
+                                }
+                                break;
+                            case "480p":
+                                if(ytFiles.indexOfKey(244)>0){
+                                    Log.i(TAG,"Quality: 480p");
+                                    v = ytFiles.get(244).getUrl();
+                                }else if(ytFiles.indexOfKey(243)>0){
+                                    Log.i(TAG,"Quality: 360p [Adapted]");
+                                    v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(242)>0){
+                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    v = ytFiles.get(242).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                    v = ytFiles.get(278).getUrl();
+                                }
+                                break;
+                            case "720p":
+                                if(ytFiles.indexOfKey(247)>0){
+                                    System.out.println(ytFiles.get(247).getFormat());
+                                    Log.i(TAG,"Quality: 720p");
+                                    v = ytFiles.get(247).getUrl();
+                                }else if(ytFiles.indexOfKey(244)>0){
+                                    Log.i(TAG,"Quality: 480p [Adapted]");
+                                    v = ytFiles.get(244).getUrl();
+                                }else if(ytFiles.indexOfKey(243)>0){
+                                    Log.i(TAG,"Quality: 360p [Adapted]");
+                                    v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(242)>0){
+                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    v = ytFiles.get(242).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                    v = ytFiles.get(278).getUrl();
+                                }
+                                break;
+                            case "1080p":
+                                if(ytFiles.indexOfKey(248)>0){
+                                    Log.i(TAG,"Quality: 1080p");
+                                    v = ytFiles.get(248).getUrl();
+                                }else if(ytFiles.indexOfKey(247)>0){
+                                    Log.i(TAG,"Quality: 720p [Adapted]");
+                                    v = ytFiles.get(247).getUrl();
+                                }else if(ytFiles.indexOfKey(244)>0){
+                                    Log.i(TAG,"Quality: 480p [Adapted]");
+                                    v = ytFiles.get(244).getUrl();
+                                }else if(ytFiles.indexOfKey(243)>0){
+                                    Log.i(TAG,"Quality: 360p [Adapted]");
+                                    v = ytFiles.get(243).getUrl();
+                                }else if(ytFiles.indexOfKey(242)>0){
+                                    Log.i(TAG,"Quality: 240p [Adapted]");
+                                    v = ytFiles.get(242).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p [Adapted]");
+                                    v = ytFiles.get(278).getUrl();
+                                }
+                                break;
+                            default:
+                                v = ytFiles.get(247).getUrl(); break;
+                        }
+                        a = ytFiles.get(140).getUrl();
 
-            //Uri uri = Uri.parse(dataSource);
-            String vdataSource = dataSource.split("sarbagya")[0];
-            String adataSource = dataSource.split("sarbagya")[1];
-            Uri vuri = Uri.parse(vdataSource);
-            Uri auri = Uri.parse(adataSource);
-
-            DataSource.Factory dataSourceFactory;
-
-            dataSourceFactory =
-                    new DefaultHttpDataSourceFactory(
-                            "ExoPlayer",
-                            null,
-                            DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
-                            DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
-                            true);
+                        DataSource.Factory dataSourceFactory;
+                        dataSourceFactory =
+                                new DefaultHttpDataSourceFactory(
+                                        "ExoPlayer",
+                                        null,
+                                        DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                                        DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
+                                        true);
 
 
-            MediaSource mediaSource = buildMediaSource(vuri, auri, dataSourceFactory, context);
-            exoPlayer.prepare(mediaSource);
+                        Uri vUri = Uri.parse(v);
+                        Uri aUri = Uri.parse(a);
+                        MediaSource mediaSource = buildMediaSource(vUri, aUri, dataSourceFactory, context);
+                        exoPlayer.prepare(mediaSource);
 
-            setupYoutubePlayer(eventChannel, textureEntry, result);
+                        setupYoutubePlayer(eventChannel, textureEntry, result);
+                    }
+                }
+            }.extract(url, true, true);
         }
 
         private MediaSource buildMediaSource(
@@ -136,7 +238,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
             int type = Util.inferContentType(vuri.getLastPathSegment());
             switch (type) {
                 case C.TYPE_SS:
-                    System.out.println("Media Type: SMOOTH_STREAMING");
+                    Log.i(TAG,"Media Type: SMOOTH STREAMING");
                     SsMediaSource vSSource = new SsMediaSource.Factory(
                             new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
                             new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
@@ -147,7 +249,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                             .createMediaSource(auri);
                     return new MergingMediaSource(vSSource,aSSource);
                 case C.TYPE_DASH:
-                    System.out.println("Media Type: DASH");
+                    Log.i(TAG,"Media Type: DASH");
                     DashMediaSource vDSource = new DashMediaSource.Factory(
                             new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
                             new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
@@ -158,12 +260,12 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                             .createMediaSource(auri);
                     return new MergingMediaSource(vDSource,aDSource);
                 case C.TYPE_HLS:
-                    System.out.println("Media Type: HLS");
+                    Log.i(TAG,"Media Type: HLS");
                     HlsMediaSource vHSource =  new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(vuri);
                     HlsMediaSource aHSource =  new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(auri);
                     return new MergingMediaSource(vHSource,aHSource);
                 case C.TYPE_OTHER:
-                    System.out.println("Media Type: NORMAL");
+                    Log.i(TAG,"Media Type: GENERAL");
                     ExtractorMediaSource vESource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
                             .setExtractorsFactory(new DefaultExtractorsFactory())
                             .createMediaSource(vuri);
@@ -224,7 +326,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                         public void onPlayerError(final ExoPlaybackException error) {
                             super.onPlayerError(error);
                             if (eventSink != null) {
-                                eventSink.error("VideoError", "Video player had error " + error, null);
+                                eventSink.error("VideoError", "Youtube player had error " + error, null);
                             }
                         }
                     });
@@ -269,14 +371,24 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
             return exoPlayer.getCurrentPosition();
         }
 
+        @SuppressWarnings("SuspiciousNameCombination")
         private void sendInitialized() {
             if (isInitialized) {
                 Map<String, Object> event = new HashMap<>();
                 event.put("event", "initialized");
                 event.put("duration", exoPlayer.getDuration());
                 if (exoPlayer.getVideoFormat() != null) {
-                    event.put("width", exoPlayer.getVideoFormat().width);
-                    event.put("height", exoPlayer.getVideoFormat().height);
+                    Format videoFormat = exoPlayer.getVideoFormat();
+                    int width = videoFormat.width;
+                    int height = videoFormat.height;
+                    int rotationDegrees = videoFormat.rotationDegrees;
+                    // Switch the width/height if video was taken in portrait mode
+                    if (rotationDegrees == 90 || rotationDegrees == 270) {
+                        width = exoPlayer.getVideoFormat().height;
+                        height = exoPlayer.getVideoFormat().width;
+                    }
+                    event.put("width", width);
+                    event.put("height", height);
                 }
                 eventSink.success(event);
             }
