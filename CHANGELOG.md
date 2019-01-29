@@ -1,4 +1,13 @@
-## [0.7.2]&[0.7.1] - January 26, 2019.
+## [0.8.1] - January 29, 2019.
+
+* Minor bug fixes.
+
+## [0.8.0] - January 29, 2019.
+
+* (Fixed) Defining controller is optional now.
+* (Fixed) Video not disposing issue. Thanks to [@Y-ndm] for raising the [issue](https://github.com/sarbagyastha/youtube_player/issues/7).
+
+## [0.7.2] & [0.7.1] - January 26, 2019.
 
 * Minor Fixes.
 
@@ -13,7 +22,7 @@
 
 ## [0.6.1] - January 11, 2019.
 
-* (FIXED) Video continuing to play on background. Thanks to [@ParthAggarwal1996](https://github.com/sarbagyastha/youtube_player/issues/3) for raising the issue.
+* (FIXED) Video continuing to play on background. Thanks to [@ParthAggarwal1996] for raising the [issue](https://github.com/sarbagyastha/youtube_player/issues/3).
 * Dependency Update
 
 ## [0.6.0] - January 5, 2019.

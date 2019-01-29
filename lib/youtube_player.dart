@@ -243,7 +243,9 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       dataSourceDescription,
     );
     _textureId = response['textureId'];
-    _creatingCompleter.complete(null);
+    if(!_creatingCompleter.isCompleted){
+      _creatingCompleter.complete(null);
+    }
     final Completer<void> initializingCompleter = Completer<void>();
 
     DurationRange toDurationRange(dynamic value) {
@@ -752,6 +754,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   VideoPlayerController _videoController;
   YoutubePlayerController _youtubePlayerControllerController;
   String videoId = "";
+  bool initialize = true;
 
   @override
   void initState() {
@@ -766,22 +769,15 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (widget.source.contains("http")) {
-      if (getIdFromUrl(widget.source) != videoId) {
-        _youtubePlayerControllerController.pause();
-        videoId = getIdFromUrl(widget.source);
-        _videoController = VideoPlayerController.network(
-            videoId + "sarbagya" + qualityMapping(widget.quality));
-      }
-    } else {
-      if (widget.source != videoId) {
-        _youtubePlayerControllerController.pause();
-        videoId = widget.source;
-        _videoController = VideoPlayerController.network(
-            videoId + "sarbagya" + qualityMapping(widget.quality));
-      }
-    }
+  void dispose() {
+    _videoController.setVolume(0.0);
+    _videoController.dispose();
+    _youtubePlayerControllerController.setVolume(0.0);
+    _youtubePlayerControllerController.dispose();
+    super.dispose();
+  }
+
+  void initializeYTController(){
     _youtubePlayerControllerController = YoutubePlayerController(
       videoPlayerController: _videoController,
       aspectRatio: widget.aspectRatio,
@@ -798,8 +794,35 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       ),
       placeholder: widget.placeHolder,
     );
-    widget.callbackController(_youtubePlayerControllerController);
+    if(widget.callbackController!=null){
+      widget.callbackController(_youtubePlayerControllerController);
+    }
     print("Youtube Video Id: $videoId");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.source.contains("http")) {
+      if (getIdFromUrl(widget.source) != videoId) {
+        _youtubePlayerControllerController.pause();
+        videoId = getIdFromUrl(widget.source);
+        _videoController = VideoPlayerController.network(
+            videoId + "sarbagya" + qualityMapping(widget.quality));
+        initializeYTController();
+      }
+    } else {
+      if (widget.source != videoId) {
+        _youtubePlayerControllerController.pause();
+        videoId = widget.source;
+        _videoController = VideoPlayerController.network(
+            videoId + "sarbagya" + qualityMapping(widget.quality));
+        initializeYTController();
+      }
+    }
+    if(initialize){
+      initializeYTController();
+      initialize = false;
+    }
     return Container(
         decoration: BoxDecoration(
             color: Colors.black,
