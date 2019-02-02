@@ -1,3 +1,9 @@
+## [1.0.0] - February 1, 2019.
+
+* **Breaking change**. Migrate from the deprecated original Android Support Library to AndroidX. This shouldn't result in any functional changes, but it requires any Android apps using this plugin to [also migrate](https://developer.android.com/jetpack/androidx/migrate) if they're
+  using the original support library.
+* AutoPlay property added.
+
 ## [0.8.1] - January 29, 2019.
 
 * Minor bug fixes.

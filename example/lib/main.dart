@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.pink,
+        primarySwatch: Colors.red,
       ),
       home: MyHomePage(title: 'Youtube Player Demo'),
     );
@@ -52,6 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
               YoutubePlayer(
                 source: id,
                 quality: YoutubeQuality.HD,
+                autoPlay: true,
                 callbackController: (controller) {
                   _controller = controller;
                 },
@@ -83,7 +84,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.symmetric(
                           vertical: 16.0,
                         ),
-                        color: Colors.pink,
+                        color: Colors.red,
                         child: Text(
                           "PLAY",
                           style: TextStyle(fontSize: 18.0, color: Colors.white),
@@ -99,7 +100,10 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: <Widget>[
                         IconButton(
                             icon: Icon(Icons.play_arrow),
-                            onPressed: () => _controller.videoPlayerController.value.isPlaying? null : _controller.play()),
+                            onPressed: () => _controller
+                                    .videoPlayerController.value.isPlaying
+                                ? null
+                                : _controller.play()),
                         IconButton(
                             icon: Icon(Icons.pause),
                             onPressed: () => _controller.pause()),
@@ -140,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           child: OutlineButton(
                               child: Text("Adjust"),
                               onPressed: () => _controller.setVolume(
-                                  double.parse(_volumeController.text) * 10)),
+                                  double.parse(_volumeController.text) / 10)),
                         ),
                       ),
                     ),
@@ -159,9 +163,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text(videoDuration),
                         onPressed: () {
                           setState(() {
-                            videoDuration = _controller
-                                .videoPlayerController.value.duration.inSeconds
-                                .toString() +" seconds";
+                            videoDuration = _controller.videoPlayerController
+                                    .value.duration.inSeconds
+                                    .toString() +
+                                " seconds";
                           });
                         }),
                     OutlineButton(

@@ -243,7 +243,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
       dataSourceDescription,
     );
     _textureId = response['textureId'];
-    if(!_creatingCompleter.isCompleted){
+    if (!_creatingCompleter.isCompleted) {
       _creatingCompleter.complete(null);
     }
     final Completer<void> initializingCompleter = Completer<void>();
@@ -717,13 +717,13 @@ class YoutubePlayer extends StatefulWidget {
   final Color handleColor;
   final Color controlsColor;
   final Color controlsBackgroundColor;
-  final Widget placeHolder;
   final Duration startAt;
   final bool showThumbnail;
   final bool keepScreenOn;
   final bool autoInitialize;
   final bool showControls;
   final bool fullScreen;
+  final bool autoPlay;
   final YPCallBack callbackController;
 
   YoutubePlayer(
@@ -731,17 +731,17 @@ class YoutubePlayer extends StatefulWidget {
       @required this.quality,
       this.aspectRatio = 16 / 9,
       this.bufferedColor = Colors.white,
-      this.playedColor = Colors.pink,
-      this.handleColor = Colors.pink,
+      this.playedColor = Colors.red,
+      this.handleColor = Colors.red,
       this.controlsColor = Colors.white,
       this.controlsBackgroundColor = const Color(0x33000000),
-      this.placeHolder,
       this.startAt,
       this.showThumbnail = true,
       this.keepScreenOn = true,
       this.autoInitialize = true,
       this.showControls = true,
       this.fullScreen = false,
+      this.autoPlay = true,
       this.callbackController});
 
   @override
@@ -777,11 +777,11 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     super.dispose();
   }
 
-  void initializeYTController(){
+  void initializeYTController() {
     _youtubePlayerControllerController = YoutubePlayerController(
       videoPlayerController: _videoController,
       aspectRatio: widget.aspectRatio,
-      autoPlay: true,
+      autoPlay: widget.autoPlay,
       startAt: widget.startAt,
       allowedScreenSleep: !widget.keepScreenOn,
       autoInitialize: widget.autoInitialize,
@@ -792,9 +792,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         playedColor: widget.playedColor,
         handleColor: widget.handleColor,
       ),
-      placeholder: widget.placeHolder,
     );
-    if(widget.callbackController!=null){
+    if (widget.callbackController != null) {
       widget.callbackController(_youtubePlayerControllerController);
     }
     print("Youtube Video Id: $videoId");
@@ -819,7 +818,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         initializeYTController();
       }
     }
-    if(initialize){
+    if (initialize) {
       initializeYTController();
       initialize = false;
     }
