@@ -1,4 +1,4 @@
-## [2.0.1] - February 3, 2019.
+## [2.0.2] - February 3, 2019.
 
 * **Breaking change**. [context] property is required now.
 * Redesigned controls to match original YouTube experience.
