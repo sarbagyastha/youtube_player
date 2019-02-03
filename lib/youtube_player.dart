@@ -37,7 +37,7 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:youtube_player/yp_chewie.dart';
+import 'package:youtube_player/controls.dart';
 
 enum YoutubeQuality { LOW, MEDIUM, HIGH, HD, FHD }
 
@@ -706,12 +706,14 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
   }
 }
 
-typedef YPCallBack(YoutubePlayerController controller);
+typedef YPCallBack(VideoPlayerController controller);
 
 class YoutubePlayer extends StatefulWidget {
   final String source;
   final YoutubeQuality quality;
   final double aspectRatio;
+  final double width;
+  final bool autoPlay;
   final Color bufferedColor;
   final Color playedColor;
   final Color handleColor;
@@ -723,13 +725,14 @@ class YoutubePlayer extends StatefulWidget {
   final bool autoInitialize;
   final bool showControls;
   final bool fullScreen;
-  final bool autoPlay;
   final YPCallBack callbackController;
 
   YoutubePlayer(
       {@required this.source,
       @required this.quality,
       this.aspectRatio = 16 / 9,
+      this.width,
+      this.autoPlay = true,
       this.bufferedColor = Colors.white,
       this.playedColor = Colors.red,
       this.handleColor = Colors.red,
@@ -741,7 +744,6 @@ class YoutubePlayer extends StatefulWidget {
       this.autoInitialize = true,
       this.showControls = true,
       this.fullScreen = false,
-      this.autoPlay = true,
       this.callbackController});
 
   @override
@@ -752,19 +754,27 @@ class YoutubePlayer extends StatefulWidget {
 
 class _YoutubePlayerState extends State<YoutubePlayer> {
   VideoPlayerController _videoController;
-  YoutubePlayerController _youtubePlayerControllerController;
   String videoId = "";
   bool initialize = true;
+  double width;
+  double height;
+  bool _showControls;
+  String _selectedQuality;
+  bool _showFast = false;
+  bool _showRewind = false;
+  bool _showVideoProgressBar = true;
 
   @override
   void initState() {
+    _selectedQuality = qualityMapping(widget.quality);
+    _showControls = widget.autoPlay ? false : true;
     if (widget.source.contains("http")) {
       videoId = getIdFromUrl(widget.source);
     } else {
       videoId = widget.source;
     }
-    _videoController = VideoPlayerController.network(
-        videoId + "sarbagya" + qualityMapping(widget.quality));
+    _videoController =
+        VideoPlayerController.network(videoId + "sarbagya" + _selectedQuality);
     super.initState();
   }
 
@@ -772,49 +782,38 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   void dispose() {
     _videoController.setVolume(0.0);
     _videoController.dispose();
-    _youtubePlayerControllerController.setVolume(0.0);
-    _youtubePlayerControllerController.dispose();
     super.dispose();
   }
 
   void initializeYTController() {
-    _youtubePlayerControllerController = YoutubePlayerController(
-      videoPlayerController: _videoController,
-      aspectRatio: widget.aspectRatio,
-      autoPlay: widget.autoPlay,
-      startAt: widget.startAt,
-      allowedScreenSleep: !widget.keepScreenOn,
-      autoInitialize: widget.autoInitialize,
-      showControls: widget.showControls,
-      fullScreenByDefault: widget.fullScreen,
-      materialProgressColors: ChewieProgressColors(
-        bufferedColor: widget.bufferedColor,
-        playedColor: widget.playedColor,
-        handleColor: widget.handleColor,
-      ),
-    );
+    _videoController.initialize().then((_) {
+      if (widget.autoPlay) _videoController.play();
+      setState(() {});
+    });
     if (widget.callbackController != null) {
-      widget.callbackController(_youtubePlayerControllerController);
+      widget.callbackController(_videoController);
     }
     print("Youtube Video Id: $videoId");
   }
 
   @override
   Widget build(BuildContext context) {
+    width = widget.width ?? MediaQuery.of(context).size.width;
+    height = 1 / widget.aspectRatio * width;
     if (widget.source.contains("http")) {
       if (getIdFromUrl(widget.source) != videoId) {
-        _youtubePlayerControllerController.pause();
+        _videoController.pause();
         videoId = getIdFromUrl(widget.source);
         _videoController = VideoPlayerController.network(
-            videoId + "sarbagya" + qualityMapping(widget.quality));
+            videoId + "sarbagya" + _selectedQuality);
         initializeYTController();
       }
     } else {
       if (widget.source != videoId) {
-        _youtubePlayerControllerController.pause();
+        _videoController.pause();
         videoId = widget.source;
         _videoController = VideoPlayerController.network(
-            videoId + "sarbagya" + qualityMapping(widget.quality));
+            videoId + "sarbagya" + _selectedQuality);
         initializeYTController();
       }
     }
@@ -822,22 +821,177 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       initializeYTController();
       initialize = false;
     }
-    return Container(
-        decoration: BoxDecoration(
-            color: Colors.black,
-            image: DecorationImage(
-                image: widget.showThumbnail && videoId != "" && videoId != null
-                    ? NetworkImage(
-                        "https://i3.ytimg.com/vi/$videoId/sddefault.jpg")
-                    : AssetImage("assets/no_thumbnail.png"),
-                fit: BoxFit.cover)),
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.width / widget.aspectRatio,
-        child: Chewie(
-          controller: _youtubePlayerControllerController,
-          controlsColor: widget.controlsColor,
-          controlsBackgroundColor: widget.controlsBackgroundColor,
-        ));
+    return _buildVideo(height, width, false);
+  }
+
+  Widget _buildVideo(double _height, double _width, bool _isFullScreen) {
+    return Stack(
+      children: <Widget>[
+        AnimatedContainer(
+          duration: Duration(seconds: 1),
+          height: _height,
+          width: _width,
+          color: Colors.black,
+        ),
+        Center(
+          child: _videoController.value.initialized
+              ? AnimatedContainer(
+                  duration: Duration(seconds: 1),
+                  height: _height,
+                  child: AspectRatio(
+                    aspectRatio: _videoController.value.aspectRatio,
+                    child: VideoPlayer(_videoController),
+                  ),
+                )
+              : Container(
+                  height: _height,
+                  width: _width,
+                  child: Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+        ),
+        _videoController.value.initialized
+            ? Controls(
+                height: _height,
+                width: _width,
+                controller: _videoController,
+                showControls: _showControls,
+                videoId: videoId,
+                defaultQuality: _selectedQuality,
+                isFullScreen: _isFullScreen,
+                controlsShowingCallback: (showing) {
+                  Timer(Duration(seconds: 1),(){
+                    setState(() {
+                      _showVideoProgressBar = !showing;
+                    });
+                  });
+                },
+                seekCallback: (action) {
+                  if (action == 'r') {
+                    setState(() {
+                      _showRewind = true;
+                    });
+                    _videoController.seekTo(
+                      Duration(
+                          seconds:
+                              _videoController.value.position.inSeconds - 10),
+                    );
+                    Timer(Duration(seconds: 1), () {
+                      if (mounted)
+                        setState(() {
+                          _showRewind = false;
+                        });
+                    });
+                  } else {
+                    setState(() {
+                      _showFast = true;
+                    });
+                    _videoController.seekTo(
+                      Duration(
+                          seconds:
+                              _videoController.value.position.inSeconds + 10),
+                    );
+                    Timer(Duration(seconds: 1), () {
+                      if (mounted)
+                        setState(() {
+                          _showFast = false;
+                        });
+                    });
+                  }
+                },
+                qualityChangeCallback: (quality, position) {
+                  _videoController.pause();
+                  setState(() {
+                    _selectedQuality = quality;
+                    _videoController = VideoPlayerController.network(
+                        videoId + "sarbagya" + quality);
+                  });
+                  _videoController.initialize().then((_) {
+                    _videoController.seekTo(position);
+                    _videoController.play();
+                    setState(() {});
+                  });
+                  if (widget.callbackController != null) {
+                    widget.callbackController(_videoController);
+                  }
+                },
+                fullScreenCallback: () async {
+                  await _pushFullScreenWidget(context);
+                },
+              )
+            : Container(),
+        _fastForward(_height, _width),
+        _rewind(_height, _width),
+        _videoController.value.initialized && _showVideoProgressBar
+            ? Positioned(
+                bottom: -4,
+                child: Container(
+                  width: width,
+                  child: VideoProgressIndicator(
+                    _videoController,
+                    allowScrubbing: true,
+                    padding: EdgeInsets.all(0.0),
+                  ),
+                ),
+              )
+            : Container(),
+      ],
+    );
+  }
+
+  Widget _fastForward(double _height, double _width) {
+    return _showFast
+        ? Positioned(
+            right: 0,
+            child: GestureDetector(
+              onDoubleTap: () {
+                _videoController.seekTo(
+                  Duration(
+                      seconds: _videoController.value.position.inSeconds + 10),
+                );
+              },
+              child: Container(
+                width: _width / 3,
+                height: _height,
+                child: Center(
+                  child: Icon(
+                    Icons.fast_forward,
+                    size: 40.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          )
+        : Container();
+  }
+
+  Widget _rewind(double _height, double _width) {
+    return _showRewind
+        ? Positioned(
+            left: 0,
+            child: GestureDetector(
+              onDoubleTap: () {
+                _videoController.seekTo(
+                  Duration(
+                      seconds: _videoController.value.position.inSeconds - 10),
+                );
+              },
+              child: Container(
+                width: _width / 3,
+                height: _height,
+                child: Center(
+                  child: Icon(
+                    Icons.fast_rewind,
+                    size: 40.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          )
+        : Container();
   }
 
   String qualityMapping(YoutubeQuality quality) {
@@ -877,4 +1031,48 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         r"^https:\/\/(?:www\.|m\.)?youtube(?:-nocookie)?\.com\/embed\/([_\-a-zA-Z0-9]{11}).*$"),
     new RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
   ];
+
+  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
+    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+    final TransitionRoute<Null> route = PageRouteBuilder<Null>(
+      settings: RouteSettings(isInitialRoute: false),
+      pageBuilder: _fullScreenRoutePageBuilder,
+    );
+
+    SystemChrome.setEnabledSystemUIOverlays([]);
+    if (isAndroid) {
+      SystemChrome.setPreferredOrientations([
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ]);
+    }
+
+    await Navigator.of(context).push(route);
+
+    SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+    SystemChrome.setPreferredOrientations(
+      const [
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+        DeviceOrientation.landscapeLeft,
+        DeviceOrientation.landscapeRight,
+      ],
+    );
+  }
+
+  Widget _fullScreenRoutePageBuilder(
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+  ) {
+    return AnimatedBuilder(
+      animation: animation,
+      builder: (BuildContext context, Widget child) {
+        return Scaffold(
+          body: _buildVideo(MediaQuery.of(context).size.height,
+              MediaQuery.of(context).size.width, true),
+        );
+      },
+    );
+  }
 }

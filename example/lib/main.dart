@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:youtube_player/youtube_player.dart';
-import 'package:youtube_player/yp_chewie.dart';
 
 void main() => runApp(MyApp());
 
@@ -32,11 +31,11 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _idController = TextEditingController();
   TextEditingController _seekToController = TextEditingController();
   TextEditingController _volumeController = TextEditingController();
-  YoutubePlayerController _controller;
+  VideoPlayerController _controller;
   String position = "Get Current Position";
   String status = "Get Player Status";
   String videoDuration = "Get Video Duration";
-  String id = "nPt8bK2gbaU";
+  String id = "nONOGLMzXjc";
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +46,6 @@ class _MyHomePageState extends State<MyHomePage> {
         body: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               YoutubePlayer(
                 source: id,
@@ -100,8 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: <Widget>[
                         IconButton(
                             icon: Icon(Icons.play_arrow),
-                            onPressed: () => _controller
-                                    .videoPlayerController.value.isPlaying
+                            onPressed: () => _controller.value.isPlaying
                                 ? null
                                 : _controller.play()),
                         IconButton(
@@ -109,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             onPressed: () => _controller.pause()),
                         IconButton(
                             icon: Icon(Icons.fullscreen),
-                            onPressed: () => _controller.enterFullScreen()),
+                            onPressed: () => _controller.value.isPlaying),
                       ],
                     ),
                     SizedBox(
@@ -150,9 +147,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                     OutlineButton(
                         child: Text(position),
-                        onPressed: () => _controller
-                                .videoPlayerController.position
-                                .then((currentPosition) {
+                        onPressed: () =>
+                            _controller.position.then((currentPosition) {
                               setState(() {
                                 position =
                                     currentPosition.inSeconds.toString() +
@@ -163,8 +159,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text(videoDuration),
                         onPressed: () {
                           setState(() {
-                            videoDuration = _controller.videoPlayerController
-                                    .value.duration.inSeconds
+                            videoDuration = _controller.value.duration.inSeconds
                                     .toString() +
                                 " seconds";
                           });
@@ -173,7 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         child: Text(status),
                         onPressed: () {
                           setState(() {
-                            _controller.videoPlayerController.value.isPlaying
+                            _controller.value.isPlaying
                                 ? status = "Playing"
                                 : status = "Paused";
                           });
