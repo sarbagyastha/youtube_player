@@ -3,40 +3,40 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:youtube_player/youtube_player.dart';
 import 'package:share/share.dart';
+import 'package:screen/screen.dart';
 
 typedef YoutubeQualityChangeCallback(String quality, Duration position);
-typedef SeekCallback(String action);
 typedef ControlsShowingCallback(bool showing);
 
 class Controls extends StatefulWidget {
   final bool showControls;
   final double width;
   final double height;
-  final Color controlColor;
   final String videoId;
   final String defaultQuality;
   final bool defaultCall;
   final YoutubeQualityChangeCallback qualityChangeCallback;
   final VideoPlayerController controller;
   final VoidCallback fullScreenCallback;
-  final SeekCallback seekCallback;
   final bool isFullScreen;
   final ControlsShowingCallback controlsShowingCallback;
+  final Color controlsColor;
+  final Color controlsBackgroundColor;
 
   Controls({
     this.showControls,
     this.controller,
     this.height,
     this.width,
-    this.controlColor = Colors.white,
     this.qualityChangeCallback,
     this.videoId,
     this.defaultCall,
     this.defaultQuality,
     this.fullScreenCallback,
-    this.seekCallback,
     this.controlsShowingCallback,
     this.isFullScreen = false,
+    this.controlsColor,
+    this.controlsBackgroundColor,
   });
   @override
   _ControlsState createState() => _ControlsState();
@@ -50,6 +50,9 @@ class _ControlsState extends State<Controls> {
   String _selectedQuality;
   bool _buffering = false;
   Timer _timer;
+  bool _showFast = false;
+  bool _showRewind = false;
+  int seekCount = 0;
 
   @override
   void initState() {
@@ -72,8 +75,9 @@ class _ControlsState extends State<Controls> {
               _buffering = widget.controller.value.isBuffering;
               _currentPositionString =
                   secondsToTime(widget.controller.value.position.inSeconds);
-              _remainingString =
-                  "- "+secondsToTime(widget.controller.value.duration.inSeconds-widget.controller.value.position.inSeconds);
+              _remainingString = "- " +
+                  secondsToTime(widget.controller.value.duration.inSeconds -
+                      widget.controller.value.position.inSeconds);
             });
           }
         }
@@ -95,6 +99,7 @@ class _ControlsState extends State<Controls> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.isFullScreen) Screen.keepOn(true);
     return Stack(
       children: <Widget>[
         GestureDetector(
@@ -144,21 +149,44 @@ class _ControlsState extends State<Controls> {
       child: GestureDetector(
         onTap: onTapAction,
         onDoubleTap: () {
-          widget.controller.seekTo(
-            Duration(seconds: widget.controller.value.position.inSeconds + 10),
-          );
+          if (mounted) {
+            setState(() {
+              _showFast = true;
+              seekCount += 10;
+            });
+            widget.controller.seekTo(
+              Duration(
+                  seconds: widget.controller.value.position.inSeconds + 10),
+            );
+            Timer(Duration(seconds: 2), () {
+              setState(() {
+                _showFast = false;
+                seekCount = 0;
+              });
+            });
+          }
         },
         child: Container(
           color: Colors.transparent,
           width: _width / 2.5,
           height: _height - 80,
-          child: Center(
-            child: Icon(
-              Icons.fast_forward,
-              size: 40.0,
-              color: Colors.white,
-            ),
-          ),
+          child: _showFast
+              ? Center(
+                  child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Icon(
+                      Icons.fast_forward,
+                      size: 40.0,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      " ${seekCount.toString()} secs",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ))
+              : Container(),
         ),
       ),
     );
@@ -171,26 +199,51 @@ class _ControlsState extends State<Controls> {
       child: GestureDetector(
         onTap: onTapAction,
         onDoubleTap: () {
-          widget.controller.seekTo(
-            Duration(seconds: widget.controller.value.position.inSeconds - 10),
-          );
+          if (mounted) {
+            setState(() {
+              _showRewind = true;
+              seekCount += 10;
+            });
+            widget.controller.seekTo(
+              Duration(
+                  seconds: widget.controller.value.position.inSeconds - 10),
+            );
+            Timer(Duration(seconds: 2), () {
+              setState(() {
+                _showRewind = false;
+                seekCount = 0;
+              });
+            });
+          }
         },
         child: Container(
           width: _width / 2.5,
           height: _height - 80,
-          child: Center(
-            child: Icon(
-              Icons.fast_rewind,
-              size: 40.0,
-              color: Colors.white,
-            ),
-          ),
+          color: Colors.transparent,
+          child: _showRewind
+              ? Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        " ${seekCount.toString()} secs",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Icon(
+                        Icons.fast_rewind,
+                        size: 40.0,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                )
+              : Container(),
         ),
       ),
     );
   }
 
-  void onTapAction(){
+  void onTapAction() {
     if (_timer != null) _timer.cancel();
     setState(() {
       _showControls = !_showControls;
@@ -230,7 +283,7 @@ class _ControlsState extends State<Controls> {
                 widget.controller.value.isPlaying
                     ? Icons.pause
                     : Icons.play_arrow,
-                color: widget.controlColor,
+                color: widget.controlsColor,
                 size: widget.isFullScreen ? 100.0 : 70.0,
               ),
       ),
@@ -263,7 +316,7 @@ class _ControlsState extends State<Controls> {
             child: Text(
               _selectedQuality,
               style: TextStyle(
-                color: Colors.white,
+                color: widget.controlsColor,
                 fontWeight: FontWeight.w900,
                 fontSize: widget.isFullScreen ? 22 : 16,
               ),
@@ -272,7 +325,7 @@ class _ControlsState extends State<Controls> {
           IconButton(
             icon: Icon(
               Icons.share,
-              color: Colors.white,
+              color: widget.controlsColor,
             ),
             onPressed: shareVideo,
           ),
@@ -286,6 +339,7 @@ class _ControlsState extends State<Controls> {
     return Positioned(
       bottom: 0.0,
       child: Container(
+        color: widget.controlsBackgroundColor,
         width: widget.width,
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -295,7 +349,7 @@ class _ControlsState extends State<Controls> {
               padding: const EdgeInsets.only(left: 10.0),
               child: Text(
                 _currentPositionString,
-                style: TextStyle(color: Colors.white, fontSize: 12.0),
+                style: TextStyle(color: widget.controlsColor, fontSize: 12.0),
               ),
             ),
             Expanded(
@@ -315,12 +369,12 @@ class _ControlsState extends State<Controls> {
             ),
             Text(
               _remainingString,
-              style: TextStyle(color: Colors.white, fontSize: 12.0),
+              style: TextStyle(color: widget.controlsColor, fontSize: 12.0),
             ),
             IconButton(
               icon: Icon(
                 widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                color: Colors.white,
+                color: widget.controlsColor,
               ),
               onPressed: () {
                 widget.isFullScreen

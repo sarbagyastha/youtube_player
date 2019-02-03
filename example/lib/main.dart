@@ -36,6 +36,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String status = "Get Player Status";
   String videoDuration = "Get Video Duration";
   String id = "nONOGLMzXjc";
+  bool isMute = false;
 
   @override
   Widget build(BuildContext context) {
@@ -48,12 +49,21 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               YoutubePlayer(
+                context: context,
                 source: id,
                 quality: YoutubeQuality.HD,
+                aspectRatio: 16 / 9,
                 autoPlay: true,
+                showThumbnail: false,
+                keepScreenOn: false,
+                playerMode: YoutubePlayerMode.DEFAULT,
                 callbackController: (controller) {
                   _controller = controller;
                 },
+                onError: (error) {
+                  print(error);
+                },
+                onVideoEnded: () => print("Video Ended"),
               ),
               SizedBox(
                 height: 10.0,
@@ -97,16 +107,25 @@ class _MyHomePageState extends State<MyHomePage> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
                         IconButton(
-                            icon: Icon(Icons.play_arrow),
-                            onPressed: () => _controller.value.isPlaying
-                                ? null
-                                : _controller.play()),
+                          icon: Icon(Icons.play_arrow),
+                          onPressed: () => _controller.value.isPlaying
+                              ? null
+                              : _controller.play(),
+                        ),
                         IconButton(
-                            icon: Icon(Icons.pause),
-                            onPressed: () => _controller.pause()),
+                          icon: Icon(Icons.pause),
+                          onPressed: () => _controller.pause(),
+                        ),
                         IconButton(
-                            icon: Icon(Icons.fullscreen),
-                            onPressed: () => _controller.value.isPlaying),
+                          icon:
+                              Icon(isMute ? Icons.volume_off : Icons.volume_up),
+                          onPressed: () {
+                            _controller.setVolume(isMute ? 1 : 0);
+                            setState(() {
+                              isMute = !isMute;
+                            });
+                          },
+                        ),
                       ],
                     ),
                     SizedBox(

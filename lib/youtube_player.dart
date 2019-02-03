@@ -37,9 +37,11 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:screen/screen.dart';
 import 'package:youtube_player/controls.dart';
 
 enum YoutubeQuality { LOW, MEDIUM, HIGH, HD, FHD }
+enum YoutubePlayerMode { DEFAULT, NO_CONTROLS }
 
 final MethodChannel _channel =
     const MethodChannel('sarbagyastha.com.np/youtubePlayer')
@@ -707,44 +709,48 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
 }
 
 typedef YPCallBack(VideoPlayerController controller);
+typedef ErrorCallback(String error);
 
 class YoutubePlayer extends StatefulWidget {
   final String source;
   final YoutubeQuality quality;
+  final BuildContext context;
   final double aspectRatio;
   final double width;
   final bool autoPlay;
-  final Color bufferedColor;
-  final Color playedColor;
-  final Color handleColor;
   final Color controlsColor;
   final Color controlsBackgroundColor;
   final Duration startAt;
   final bool showThumbnail;
   final bool keepScreenOn;
-  final bool autoInitialize;
-  final bool showControls;
-  final bool fullScreen;
+  final bool showVideoProgressbar;
   final YPCallBack callbackController;
+  final ErrorCallback onError;
+  final VoidCallback onVideoEnded;
+  final YoutubePlayerMode playerMode;
 
   YoutubePlayer(
       {@required this.source,
+      @required this.context,
       @required this.quality,
       this.aspectRatio = 16 / 9,
       this.width,
       this.autoPlay = true,
-      this.bufferedColor = Colors.white,
-      this.playedColor = Colors.red,
-      this.handleColor = Colors.red,
       this.controlsColor = Colors.white,
-      this.controlsBackgroundColor = const Color(0x33000000),
+      this.controlsBackgroundColor = Colors.transparent,
       this.startAt,
       this.showThumbnail = true,
       this.keepScreenOn = true,
-      this.autoInitialize = true,
-      this.showControls = true,
-      this.fullScreen = false,
-      this.callbackController});
+      this.showVideoProgressbar = true,
+      this.playerMode = YoutubePlayerMode.DEFAULT,
+      this.onError,
+      this.onVideoEnded,
+      this.callbackController})
+      : assert(
+            width ??
+                MediaQuery.of(context).size.width <=
+                    MediaQuery.of(context).size.width,
+            "Width must be less than Screen Width.\nScreen width:${MediaQuery.of(context).size.width}\nGiven width:$width");
 
   @override
   State<StatefulWidget> createState() {
@@ -760,8 +766,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   double height;
   bool _showControls;
   String _selectedQuality;
-  bool _showFast = false;
-  bool _showRewind = false;
   bool _showVideoProgressBar = true;
 
   @override
@@ -773,8 +777,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     } else {
       videoId = widget.source;
     }
-    _videoController =
-        VideoPlayerController.network(videoId + "sarbagya" + _selectedQuality);
+    if (videoId != null)
+      _videoController = VideoPlayerController.network(
+          videoId + "sarbagya" + _selectedQuality);
     super.initState();
   }
 
@@ -789,6 +794,16 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     _videoController.initialize().then((_) {
       if (widget.autoPlay) _videoController.play();
       setState(() {});
+      if (widget.startAt != null) _videoController.seekTo(widget.startAt);
+      _videoController.addListener(() {
+        if (_videoController.value.duration != null &&
+            _videoController.value.position != null) {
+          if (_videoController.value.position.inSeconds ==
+              _videoController.value.duration.inSeconds) {
+            widget.onVideoEnded();
+          }
+        }
+      });
     });
     if (widget.callbackController != null) {
       widget.callbackController(_videoController);
@@ -798,26 +813,35 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   Widget build(BuildContext context) {
+    if (widget.keepScreenOn) {
+      Screen.keepOn(true);
+    }
     width = widget.width ?? MediaQuery.of(context).size.width;
     height = 1 / widget.aspectRatio * width;
     if (widget.source.contains("http")) {
       if (getIdFromUrl(widget.source) != videoId) {
         _videoController.pause();
         videoId = getIdFromUrl(widget.source);
-        _videoController = VideoPlayerController.network(
-            videoId + "sarbagya" + _selectedQuality);
-        initializeYTController();
+        if (videoId != null) {
+          _videoController = VideoPlayerController.network(
+              videoId + "sarbagya" + _selectedQuality);
+          initializeYTController();
+        } else {
+          widget.onError("Malformed Video ID or URL");
+        }
       }
     } else {
       if (widget.source != videoId) {
         _videoController.pause();
         videoId = widget.source;
-        _videoController = VideoPlayerController.network(
-            videoId + "sarbagya" + _selectedQuality);
-        initializeYTController();
+        if (videoId != null) {
+          _videoController = VideoPlayerController.network(
+              videoId + "sarbagya" + _selectedQuality);
+          initializeYTController();
+        }
       }
     }
-    if (initialize) {
+    if (initialize && videoId != null) {
       initializeYTController();
       initialize = false;
     }
@@ -825,120 +849,108 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   Widget _buildVideo(double _height, double _width, bool _isFullScreen) {
-    return Stack(
-      children: <Widget>[
-        AnimatedContainer(
-          duration: Duration(seconds: 1),
-          height: _height,
-          width: _width,
-          color: Colors.black,
-        ),
-        Center(
-          child: _videoController.value.initialized
-              ? AnimatedContainer(
-                  duration: Duration(seconds: 1),
-                  height: _height,
-                  child: AspectRatio(
-                    aspectRatio: _videoController.value.aspectRatio,
-                    child: VideoPlayer(_videoController),
-                  ),
-                )
-              : Container(
-                  height: _height,
-                  width: _width,
-                  child: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-        ),
-        _videoController.value.initialized
-            ? Controls(
-                height: _height,
-                width: _width,
-                controller: _videoController,
-                showControls: _showControls,
-                videoId: videoId,
-                defaultQuality: _selectedQuality,
-                isFullScreen: _isFullScreen,
-                controlsShowingCallback: (showing) {
-                  if (mounted) {
-                    Timer(Duration(seconds: 1), () {
+    return AnimatedContainer(
+      duration: Duration(seconds: 1),
+      height: _height,
+      width: _width,
+      color: Colors.black,
+      child: AspectRatio(
+        aspectRatio: _videoController.value.aspectRatio,
+        child: Stack(
+          children: <Widget>[
+            AnimatedContainer(
+              duration: Duration(seconds: 1),
+              height: _height,
+              width: _width,
+              decoration: widget.showThumbnail && videoId != null
+                  ? BoxDecoration(
+                      image: DecorationImage(
+                        image: NetworkImage(
+                            "https://i3.ytimg.com/vi/$videoId/sddefault.jpg"),
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : BoxDecoration(),
+            ),
+            Center(
+              child: _videoController.value.initialized
+                  ? AnimatedContainer(
+                      duration: Duration(seconds: 1),
+                      height: _height,
+                      child: AspectRatio(
+                        aspectRatio: _videoController.value.aspectRatio,
+                        child: VideoPlayer(_videoController),
+                      ),
+                    )
+                  : Container(
+                      height: _height,
+                      width: _width,
+                      child: Center(
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+            ),
+            _videoController.value.initialized &&
+                    widget.playerMode == YoutubePlayerMode.DEFAULT
+                ? Controls(
+                    height: _height,
+                    width: _width,
+                    controller: _videoController,
+                    showControls: _showControls,
+                    videoId: videoId,
+                    defaultQuality: _selectedQuality,
+                    isFullScreen: _isFullScreen,
+                    controlsBackgroundColor: widget.controlsBackgroundColor,
+                    controlsColor: widget.controlsColor,
+                    controlsShowingCallback: (showing) {
+                      if (mounted) {
+                        Timer(Duration(seconds: 1), () {
+                          setState(() {
+                            _showVideoProgressBar = !showing;
+                          });
+                        });
+                      }
+                    },
+                    qualityChangeCallback: (quality, position) {
+                      _videoController.pause();
                       setState(() {
-                        _showVideoProgressBar = !showing;
+                        _selectedQuality = quality;
+                        if (videoId != null)
+                          _videoController = VideoPlayerController.network(
+                              videoId + "sarbagya" + _selectedQuality);
                       });
-                    });
-                  }
-                },
-                seekCallback: (action) {
-                  if (action == 'r') {
-                    setState(() {
-                      _showRewind = true;
-                    });
-                    _videoController.seekTo(
-                      Duration(
-                          seconds:
-                              _videoController.value.position.inSeconds - 10),
-                    );
-                    Timer(Duration(seconds: 1), () {
-                      if (mounted)
-                        setState(() {
-                          _showRewind = false;
-                        });
-                    });
-                  } else {
-                    setState(() {
-                      _showFast = true;
-                    });
-                    _videoController.seekTo(
-                      Duration(
-                          seconds:
-                              _videoController.value.position.inSeconds + 10),
-                    );
-                    Timer(Duration(seconds: 1), () {
-                      if (mounted)
-                        setState(() {
-                          _showFast = false;
-                        });
-                    });
-                  }
-                },
-                qualityChangeCallback: (quality, position) {
-                  _videoController.pause();
-                  setState(() {
-                    _selectedQuality = quality;
-                    _videoController = VideoPlayerController.network(
-                        videoId + "sarbagya" + quality);
-                  });
-                  _videoController.initialize().then((_) {
-                    _videoController.seekTo(position);
-                    _videoController.play();
-                    setState(() {});
-                  });
-                  if (widget.callbackController != null) {
-                    widget.callbackController(_videoController);
-                  }
-                },
-                fullScreenCallback: () async {
-                  await _pushFullScreenWidget(context);
-                },
-              )
-            : Container(),
-        /*_fastForward(_height, _width),
-        _rewind(_height, _width),*/
-        _videoController.value.initialized && _showVideoProgressBar
-            ? Positioned(
-                bottom: -4,
-                child: Container(
-                  width: width,
-                  child: VideoProgressIndicator(
-                    _videoController,
-                    allowScrubbing: true,
-                    padding: EdgeInsets.all(0.0),
-                  ),
-                ),
-              )
-            : Container(),
-      ],
+                      _videoController.initialize().then((_) {
+                        _videoController.seekTo(position);
+                        _videoController.play();
+                        setState(() {});
+                      });
+                      if (widget.callbackController != null) {
+                        widget.callbackController(_videoController);
+                      }
+                    },
+                    fullScreenCallback: () async {
+                      await _pushFullScreenWidget(context);
+                    },
+                  )
+                : Container(),
+            _videoController.value.initialized &&
+                    _showVideoProgressBar &&
+                    widget.showVideoProgressbar
+                ? Positioned(
+                    bottom: -4,
+                    child: Container(
+                      width: _width,
+                      child: VideoProgressIndicator(
+                        _videoController,
+                        allowScrubbing: true,
+                        padding: EdgeInsets.all(0.0),
+                      ),
+                    ),
+                  )
+                : Container(),
+          ],
+        ),
+      ),
     );
   }
 
