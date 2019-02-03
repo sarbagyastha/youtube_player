@@ -18,6 +18,7 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               YoutubePlayer(
+                context: context,
                 source: id,
                 quality: YoutubeQuality.HD,
               ),

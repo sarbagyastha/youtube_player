@@ -1,3 +1,14 @@
+## [2.0.0] - February 3, 2019.
+
+* **Breaking change**. [context] property is required now.
+* Redesigned controls to match original YouTube experience.
+* Fast forward and Rewind feature added, on double tap.
+* Can now adjust video quality through player.
+* Can now share videos with other apps.
+* Size of player can be adjusted.
+* [FIXED] Stretching portrait videos.
+
+
 ## [1.0.0] - February 1, 2019.
 
 * **Breaking change**. Migrate from the deprecated original Android Support Library to AndroidX. This shouldn't result in any functional changes, but it requires any Android apps using this plugin to [also migrate](https://developer.android.com/jetpack/androidx/migrate) if they're
