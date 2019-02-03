@@ -46,11 +46,10 @@ class _ControlsState extends State<Controls> {
   bool _showControls;
   double currentPosition = 0;
   String _currentPositionString = "00:00";
-  String _remainingString = "-00:00";
+  String _remainingString = "- 00:00";
   String _selectedQuality;
   bool _buffering = false;
   Timer _timer;
-  double _tapPosition;
 
   @override
   void initState() {
@@ -96,73 +95,118 @@ class _ControlsState extends State<Controls> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onDoubleTap: () {
-        if (_tapPosition != null) {
-          print(_tapPosition);
-          if (_tapPosition < (widget.width / 2)) {
-            print("rewind");
-            widget.seekCallback('r');
-          } else {
-            print("fast");
-            widget.seekCallback('ff');
-          }
-        }
-      },
-      onTapDown: (details) {
-        _tapPosition = details.globalPosition.dx;
-        print(_tapPosition);
-      },
-      onLongPress: () {
-        widget.isFullScreen
-            ? Navigator.pop(context)
-            : widget.fullScreenCallback();
-      },
-      onTap: () {
-        if (_timer != null) _timer.cancel();
-        setState(() {
-          _showControls = !_showControls;
-          widget.controlsShowingCallback(_showControls);
-        });
-        if (_showControls) {
-          _timer = Timer(Duration(seconds: 5), () {
-            if (mounted) {
-              setState(() {
-                _showControls = false;
-                widget.controlsShowingCallback(_showControls);
-              });
-            }
-          });
-        }
-        if (!widget.controller.value.isPlaying) widget.controller.play();
-      },
-      child: AnimatedContainer(
-        duration: Duration(seconds: 1),
-        color: Colors.transparent,
-        height: widget.height,
-        width: widget.width,
-        child: AnimatedOpacity(
-          opacity: _showControls ? 1.0 : 0.0,
-          duration: Duration(seconds: 1),
+    return Stack(
+      children: <Widget>[
+        GestureDetector(
+          onLongPress: () {
+            widget.isFullScreen
+                ? Navigator.pop(context)
+                : widget.fullScreenCallback();
+          },
+          onTap: onTapAction,
           child: AnimatedContainer(
-            width: widget.width,
-            height: widget.height,
             duration: Duration(seconds: 1),
-            child: Material(
-                color: Colors.transparent,
-                child: Stack(
-                  children: <Widget>[
-                    _buildTopControls(),
-                    Center(
-                      child: _playButton(),
-                    ),
-                    _buildBottomControls(),
-                  ],
-                )),
+            color: Colors.transparent,
+            height: widget.height,
+            width: widget.width,
+            child: AnimatedOpacity(
+              opacity: _showControls ? 1.0 : 0.0,
+              duration: Duration(seconds: 1),
+              child: AnimatedContainer(
+                width: widget.width,
+                height: widget.height,
+                duration: Duration(seconds: 1),
+                child: Material(
+                    color: Colors.transparent,
+                    child: Stack(
+                      children: <Widget>[
+                        _buildTopControls(),
+                        Center(
+                          child: _playButton(),
+                        ),
+                        _buildBottomControls(),
+                      ],
+                    )),
+              ),
+            ),
+          ),
+        ),
+        _fastForward(widget.height, widget.width),
+        _rewind(widget.height, widget.width),
+      ],
+    );
+  }
+
+  Widget _fastForward(double _height, double _width) {
+    return Positioned(
+      right: 0,
+      top: 40,
+      child: GestureDetector(
+        onTap: onTapAction,
+        onDoubleTap: () {
+          widget.controller.seekTo(
+            Duration(seconds: widget.controller.value.position.inSeconds + 10),
+          );
+        },
+        child: Container(
+          color: Colors.transparent,
+          width: _width / 2.5,
+          height: _height - 80,
+          child: Center(
+            child: Icon(
+              Icons.fast_forward,
+              size: 40.0,
+              color: Colors.white,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _rewind(double _height, double _width) {
+    return Positioned(
+      left: 0,
+      top: 40,
+      child: GestureDetector(
+        onTap: onTapAction,
+        onDoubleTap: () {
+          widget.controller.seekTo(
+            Duration(seconds: widget.controller.value.position.inSeconds - 10),
+          );
+        },
+        child: Container(
+          width: _width / 2.5,
+          height: _height - 80,
+          child: Center(
+            child: Icon(
+              Icons.fast_rewind,
+              size: 40.0,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void onTapAction(){
+    if (_timer != null) _timer.cancel();
+    setState(() {
+      _showControls = !_showControls;
+      widget.controlsShowingCallback(_showControls);
+    });
+    if (_showControls) {
+      _timer = Timer(Duration(seconds: 5), () {
+        if (mounted) {
+          setState(() {
+            _showControls = false;
+            widget.controlsShowingCallback(_showControls);
+          });
+        }
+      });
+    }
+    if (!widget.controller.value.isPlaying) widget.controller.play();
   }
 
   Widget _playButton() {

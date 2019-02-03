@@ -861,11 +861,13 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 defaultQuality: _selectedQuality,
                 isFullScreen: _isFullScreen,
                 controlsShowingCallback: (showing) {
-                  Timer(Duration(seconds: 1),(){
-                    setState(() {
-                      _showVideoProgressBar = !showing;
+                  if (mounted) {
+                    Timer(Duration(seconds: 1), () {
+                      setState(() {
+                        _showVideoProgressBar = !showing;
+                      });
                     });
-                  });
+                  }
                 },
                 seekCallback: (action) {
                   if (action == 'r') {
@@ -921,8 +923,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                 },
               )
             : Container(),
-        _fastForward(_height, _width),
-        _rewind(_height, _width),
+        /*_fastForward(_height, _width),
+        _rewind(_height, _width),*/
         _videoController.value.initialized && _showVideoProgressBar
             ? Positioned(
                 bottom: -4,
@@ -938,60 +940,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             : Container(),
       ],
     );
-  }
-
-  Widget _fastForward(double _height, double _width) {
-    return _showFast
-        ? Positioned(
-            right: 0,
-            child: GestureDetector(
-              onDoubleTap: () {
-                _videoController.seekTo(
-                  Duration(
-                      seconds: _videoController.value.position.inSeconds + 10),
-                );
-              },
-              child: Container(
-                width: _width / 3,
-                height: _height,
-                child: Center(
-                  child: Icon(
-                    Icons.fast_forward,
-                    size: 40.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          )
-        : Container();
-  }
-
-  Widget _rewind(double _height, double _width) {
-    return _showRewind
-        ? Positioned(
-            left: 0,
-            child: GestureDetector(
-              onDoubleTap: () {
-                _videoController.seekTo(
-                  Duration(
-                      seconds: _videoController.value.position.inSeconds - 10),
-                );
-              },
-              child: Container(
-                width: _width / 3,
-                height: _height,
-                child: Center(
-                  child: Icon(
-                    Icons.fast_rewind,
-                    size: 40.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          )
-        : Container();
   }
 
   String qualityMapping(YoutubeQuality quality) {
