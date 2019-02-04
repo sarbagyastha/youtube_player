@@ -378,7 +378,7 @@ class _ControlsState extends State<Controls> {
               style: TextStyle(color: widget.controlsColor, fontSize: 12.0),
             ),
             Padding(
-              padding: EdgeInsets.all(widget.width<=200?4.0:10.0),
+              padding: EdgeInsets.all(widget.width <= 200 ? 4.0 : 10.0),
               child: InkWell(
                 splashColor: Colors.grey[350],
                 onTap: () {
@@ -387,7 +387,9 @@ class _ControlsState extends State<Controls> {
                       : widget.fullScreenCallback();
                 },
                 child: Icon(
-                  widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                  widget.isFullScreen
+                      ? Icons.fullscreen_exit
+                      : Icons.fullscreen,
                   color: widget.controlsColor,
                 ),
               ),
