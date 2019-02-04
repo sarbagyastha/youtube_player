@@ -747,9 +747,8 @@ class YoutubePlayer extends StatefulWidget {
       this.onVideoEnded,
       this.callbackController})
       : assert(
-            width ??
-                MediaQuery.of(context).size.width <=
-                    MediaQuery.of(context).size.width,
+            (width ?? MediaQuery.of(context).size.width) <=
+                MediaQuery.of(context).size.width,
             "Width must be less than Screen Width.\nScreen width:${MediaQuery.of(context).size.width}\nGiven width:$width");
 
   @override
@@ -937,12 +936,15 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                     _showVideoProgressBar &&
                     widget.showVideoProgressbar
                 ? Positioned(
-                    bottom: -4,
+                    bottom: -3.5,
                     child: Container(
                       width: _width,
                       child: VideoProgressIndicator(
                         _videoController,
                         allowScrubbing: true,
+                        colors: VideoProgressColors(
+                          playedColor: widget.controlsColor,
+                        ),
                         padding: EdgeInsets.all(0.0),
                       ),
                     ),

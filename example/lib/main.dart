@@ -49,22 +49,24 @@ class _MyHomePageState extends State<MyHomePage> {
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
               YoutubePlayer(
-                context: context,
-                source: id,
-                quality: YoutubeQuality.HD,
-                aspectRatio: 16 / 9,
-                autoPlay: true,
-                showThumbnail: false,
-                keepScreenOn: false,
-                playerMode: YoutubePlayerMode.DEFAULT,
-                callbackController: (controller) {
-                  _controller = controller;
-                },
-                onError: (error) {
-                  print(error);
-                },
-                onVideoEnded: () => print("Video Ended"),
-              ),
+                      context: context,
+                      source: id,
+                      quality: YoutubeQuality.HD,
+                      aspectRatio: 16 / 9,
+                      autoPlay: true,
+                      showThumbnail: false,
+                      keepScreenOn: false,
+                      controlsBackgroundColor: Color(0x66000000),
+                      controlsColor: Colors.blueAccent,
+                      playerMode: YoutubePlayerMode.DEFAULT,
+                      callbackController: (controller) {
+                        _controller = controller;
+                      },
+                      onError: (error) {
+                        print(error);
+                      },
+                      onVideoEnded: () => print("Video Ended"),
+                ),
               SizedBox(
                 height: 10.0,
               ),

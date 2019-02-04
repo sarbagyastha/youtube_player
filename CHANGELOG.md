@@ -1,3 +1,8 @@
+## [2.0.3] - February 4, 2019.
+
+* controlsBackground property now sets background overlay for play and pause. 
+* [Fixed] Crashing on defining width.
+
 ## [2.0.2] - February 3, 2019.
 
 * **Breaking change**. [context] property is required now.

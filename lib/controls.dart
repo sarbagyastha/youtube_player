@@ -265,27 +265,31 @@ class _ControlsState extends State<Controls> {
   Widget _playButton() {
     return IgnorePointer(
       ignoring: !_showControls,
-      child: InkWell(
-        splashColor: Colors.grey[350],
+      child: Material(
         borderRadius: BorderRadius.circular(100.0),
-        onTap: () {
-          setState(() {
-            _showControls = false;
-            widget.controlsShowingCallback(_showControls);
-          });
-          if (!_buffering) {
-            togglePlaying();
-          }
-        },
-        child: _buffering
-            ? CircularProgressIndicator()
-            : Icon(
-                widget.controller.value.isPlaying
-                    ? Icons.pause
-                    : Icons.play_arrow,
-                color: widget.controlsColor,
-                size: widget.isFullScreen ? 100.0 : 70.0,
-              ),
+        color: widget.controlsBackgroundColor,
+        child: InkWell(
+          splashColor: Colors.grey[350],
+          borderRadius: BorderRadius.circular(100.0),
+          onTap: () {
+            setState(() {
+              _showControls = false;
+              widget.controlsShowingCallback(_showControls);
+            });
+            if (!_buffering) {
+              togglePlaying();
+            }
+          },
+          child: _buffering
+              ? CircularProgressIndicator()
+              : Icon(
+                  widget.controller.value.isPlaying
+                      ? Icons.pause
+                      : Icons.play_arrow,
+                  color: widget.controlsColor,
+                  size: widget.width * 0.15,
+                ),
+        ),
       ),
     );
   }
@@ -354,8 +358,10 @@ class _ControlsState extends State<Controls> {
             ),
             Expanded(
               child: Container(
-                height: 20.0,
+                height: 20,
                 child: Slider(
+                  activeColor: widget.controlsColor,
+                  inactiveColor: Colors.grey,
                   value: currentPosition,
                   onChanged: (position) {
                     setState(() {
@@ -371,16 +377,20 @@ class _ControlsState extends State<Controls> {
               _remainingString,
               style: TextStyle(color: widget.controlsColor, fontSize: 12.0),
             ),
-            IconButton(
-              icon: Icon(
-                widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
-                color: widget.controlsColor,
+            Padding(
+              padding: EdgeInsets.all(widget.width<=200?4.0:10.0),
+              child: InkWell(
+                splashColor: Colors.grey[350],
+                onTap: () {
+                  widget.isFullScreen
+                      ? Navigator.pop(context)
+                      : widget.fullScreenCallback();
+                },
+                child: Icon(
+                  widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                  color: widget.controlsColor,
+                ),
               ),
-              onPressed: () {
-                widget.isFullScreen
-                    ? Navigator.pop(context)
-                    : widget.fullScreenCallback();
-              },
             ),
           ],
         ),
