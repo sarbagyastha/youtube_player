@@ -1,3 +1,13 @@
+## [3.0.0] - February 16, 2019.
+
+* **Breaking change**. [controlsBackgroundColor] is removed. [controlsColor] property is now changed to class.
+This allows to color customize almost every interactive elements in the player.
+* **New Feature**. Supports for Live Stream Videos added.
+* Updated ExoPlayer to Version 2.9.5
+* [controlsActiveBackgroundOverlay] property added.
+* [Fixed] Minor bug with timers.
+* [Improved] Removed last traces of support library(in favor of Androidx).
+
 ## [2.0.3] - February 4, 2019.
 
 * controlsBackground property now sets background overlay for play and pause. 

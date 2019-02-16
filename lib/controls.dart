@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:youtube_player/youtube_player.dart';
 import 'package:share/share.dart';
-import 'package:screen/screen.dart';
 
 typedef YoutubeQualityChangeCallback(String quality, Duration position);
 typedef ControlsShowingCallback(bool showing);
@@ -20,10 +19,12 @@ class Controls extends StatefulWidget {
   final VoidCallback fullScreenCallback;
   final bool isFullScreen;
   final ControlsShowingCallback controlsShowingCallback;
-  final Color controlsColor;
-  final Color controlsBackgroundColor;
+  final ControlsColor controlsColor;
+  final bool controlsActiveBackgroundOverlay;
+  final bool isLive;
 
   Controls({
+    this.isLive,
     this.showControls,
     this.controller,
     this.height,
@@ -36,7 +37,7 @@ class Controls extends StatefulWidget {
     this.controlsShowingCallback,
     this.isFullScreen = false,
     this.controlsColor,
-    this.controlsBackgroundColor,
+    this.controlsActiveBackgroundOverlay,
   });
   @override
   _ControlsState createState() => _ControlsState();
@@ -74,10 +75,10 @@ class _ControlsState extends State<Controls> {
                       widget.controller.value.duration.inSeconds;
               _buffering = widget.controller.value.isBuffering;
               _currentPositionString =
-                  secondsToTime(widget.controller.value.position.inSeconds);
+                  formatDuration(widget.controller.value.position);
               _remainingString = "- " +
-                  secondsToTime(widget.controller.value.duration.inSeconds -
-                      widget.controller.value.position.inSeconds);
+                  formatDuration(widget.controller.value.duration -
+                      widget.controller.value.position);
             });
           }
         }
@@ -99,9 +100,16 @@ class _ControlsState extends State<Controls> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.isFullScreen) Screen.keepOn(true);
+    if (widget.isFullScreen) YoutubePlayer.keepOn(true);
     return Stack(
       children: <Widget>[
+        _showControls
+            ? Container(
+                color: Color(0x88000000),
+                height: widget.height,
+                width: widget.width,
+              )
+            : Container(),
         GestureDetector(
           onLongPress: () {
             widget.isFullScreen
@@ -267,7 +275,7 @@ class _ControlsState extends State<Controls> {
       ignoring: !_showControls,
       child: Material(
         borderRadius: BorderRadius.circular(100.0),
-        color: widget.controlsBackgroundColor,
+        color: widget.controlsColor.controlsBackgroundColor,
         child: InkWell(
           splashColor: Colors.grey[350],
           borderRadius: BorderRadius.circular(100.0),
@@ -286,7 +294,7 @@ class _ControlsState extends State<Controls> {
                   widget.controller.value.isPlaying
                       ? Icons.pause
                       : Icons.play_arrow,
-                  color: widget.controlsColor,
+                  color: widget.controlsColor.playPauseColor,
                   size: widget.width * 0.15,
                 ),
         ),
@@ -300,36 +308,41 @@ class _ControlsState extends State<Controls> {
       right: 0,
       child: Row(
         children: <Widget>[
-          InkWell(
-            onTap: () {
-              if (widget.isFullScreen) {
-                Scaffold.of(context).showSnackBar(
-                  SnackBar(
-                    content:
-                        Text("Quality cannot be changed in fullscreen mode."),
-                    action: SnackBarAction(
-                      label: "Exit FullScreen Mode",
-                      onPressed: () => Navigator.pop(context),
+          widget.isLive
+              ? Icon(
+                  Icons.wifi_tethering,
+                  color: widget.controlsColor.seekBarPlayedColor,
+                )
+              : InkWell(
+                  onTap: () {
+                    if (widget.isFullScreen) {
+                      Scaffold.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              "Quality cannot be changed in fullscreen mode."),
+                          action: SnackBarAction(
+                            label: "Exit FullScreen Mode",
+                            onPressed: () => Navigator.pop(context),
+                          ),
+                        ),
+                      );
+                    } else {
+                      _resolutionBottomSheet();
+                    }
+                  },
+                  child: Text(
+                    _selectedQuality,
+                    style: TextStyle(
+                      color: widget.controlsColor.buttonColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: widget.isFullScreen ? 22 : 16,
                     ),
                   ),
-                );
-              } else {
-                _resolutionBottomSheet();
-              }
-            },
-            child: Text(
-              _selectedQuality,
-              style: TextStyle(
-                color: widget.controlsColor,
-                fontWeight: FontWeight.w900,
-                fontSize: widget.isFullScreen ? 22 : 16,
-              ),
-            ),
-          ),
+                ),
           IconButton(
             icon: Icon(
               Icons.share,
-              color: widget.controlsColor,
+              color: widget.controlsColor.buttonColor,
             ),
             onPressed: shareVideo,
           ),
@@ -343,25 +356,29 @@ class _ControlsState extends State<Controls> {
     return Positioned(
       bottom: 0.0,
       child: Container(
-        color: widget.controlsBackgroundColor,
+        color: widget.controlsColor.controlsBackgroundColor,
         width: widget.width,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(left: 10.0),
-              child: Text(
-                _currentPositionString,
-                style: TextStyle(color: widget.controlsColor, fontSize: 12.0),
-              ),
-            ),
+            widget.isLive
+                ? Container()
+                : Padding(
+                    padding: const EdgeInsets.only(left: 10.0),
+                    child: Text(
+                      _currentPositionString,
+                      style: TextStyle(
+                          color: widget.controlsColor.timerColor,
+                          fontSize: 12.0),
+                    ),
+                  ),
             Expanded(
               child: Container(
                 height: 20,
                 child: Slider(
-                  activeColor: widget.controlsColor,
-                  inactiveColor: Colors.grey,
+                  activeColor: widget.controlsColor.seekBarPlayedColor,
+                  inactiveColor: widget.controlsColor.seekBarUnPlayedColor,
                   value: currentPosition,
                   onChanged: (position) {
                     setState(() {
@@ -373,10 +390,25 @@ class _ControlsState extends State<Controls> {
                 ),
               ),
             ),
-            Text(
-              _remainingString,
-              style: TextStyle(color: widget.controlsColor, fontSize: 12.0),
-            ),
+            widget.isLive
+                ? Container()
+                : Text(
+                    _remainingString,
+                    style: TextStyle(
+                      color: widget.controlsColor.timerColor,
+                      fontSize: 12.0,
+                    ),
+                  ),
+            widget.isLive
+                ? Text(
+                    "LIVE",
+                    style: TextStyle(
+                      color: widget.controlsColor.timerColor,
+                      fontSize: 12.0,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  )
+                : Container(),
             Padding(
               padding: EdgeInsets.all(widget.width <= 200 ? 4.0 : 10.0),
               child: InkWell(
@@ -390,7 +422,7 @@ class _ControlsState extends State<Controls> {
                   widget.isFullScreen
                       ? Icons.fullscreen_exit
                       : Icons.fullscreen,
-                  color: widget.controlsColor,
+                  color: widget.controlsColor.buttonColor,
                 ),
               ),
             ),
@@ -474,23 +506,20 @@ class _ControlsState extends State<Controls> {
     );
   }
 
-  String secondsToTime(int seconds) {
-    if (seconds < 60) {
-      return '00:${_seconds(seconds)}';
-    } else if (seconds < 3600) {
-      return _minutes(seconds);
-    } else {
-      return '${seconds ~/ 3600}:${_minutes((seconds % 3600) ~/ 60)}';
-    }
-  }
-
-  String _seconds(int seconds) {
-    return seconds.toString().length == 1 ? '0$seconds' : '$seconds';
-  }
-
-  String _minutes(int seconds) {
-    return (seconds ~/ 60).toString().length == 1
-        ? '0${seconds ~/ 60}:${_seconds(seconds % 60)}'
-        : '${seconds ~/ 60}:${_seconds(seconds % 60)}';
+  String formatDuration(Duration position) {
+    final ms = position.inMilliseconds;
+    int seconds = ms ~/ 1000;
+    final int hours = seconds ~/ 3600;
+    seconds = seconds % 3600;
+    var minutes = seconds ~/ 60;
+    seconds = seconds % 60;
+    final hoursString = hours >= 10 ? '$hours' : hours == 0 ? '00' : '0$hours';
+    final minutesString =
+        minutes >= 10 ? '$minutes' : minutes == 0 ? '00' : '0$minutes';
+    final secondsString =
+        seconds >= 10 ? '$seconds' : seconds == 0 ? '00' : '0$seconds';
+    final formattedTime =
+        '${hoursString == '00' ? '' : hoursString + ':'}$minutesString:$secondsString';
+    return formattedTime;
   }
 }

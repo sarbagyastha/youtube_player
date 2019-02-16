@@ -1,6 +1,6 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/Version-2.0.3-green.svg)](https://pub.dartlang.org/packages/youtube_player)       [![](https://img.shields.io/badge/Licence-Apache%202-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
+[![pub package](https://img.shields.io/badge/pub-v3.0.1-green.svg)](https://pub.dartlang.org/packages/youtube_player)       [![](https://img.shields.io/badge/Licence-Apache%202-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
 A flutter plugin to play Youtube Videos "inline" without API Key in range of Qualities(240p, 360p, 480p, 720p and 1080p).
 
@@ -12,10 +12,11 @@ A flutter plugin to play Youtube Videos "inline" without API Key in range of Qua
   - Supports HD and Full HD quality
   - Playable through <video id> or <link>
   - No need for API Key and no Limitations
+  - Supports Live Stream Videos
 
 ![DEMO](plugindemo.gif) 
 
-## New Features in v2.x.x!
+## New Features in v3.x.x!
   - Change video quality on-the-fly.
   - Share video with other apps.
   - Fast Forward and Rewind with double tap.
@@ -30,7 +31,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player: ^2.0.3
+  youtube_player: ^3.0.1
 ```
 
 #### 2\. Install
@@ -78,10 +79,11 @@ YoutubePlayer(
 | source | Source of youtube video. Video ID or URL | Required. | 
 | context | BuildContext of parent. | Required. |
 | quality | Sets quality for youtube videos. | Required. |
+| isLive | Denotes if the source is Live Video | Optional. Default = false.|
 | aspectRatio | Sets aspect ratio of player's container  | Optional. Default = 16/9 |
 | width | Sets width of player's container | Optional. Default = Screen width. *Must be less than Screen Width.* |
-| controlsColor | Sets color of controls like play, pause, etc. | Optional. Default = White |
-| controlsBackgroundColor | Sets background color of controls like play, pause, etc. | Optional. Default = Transparent |
+| controlsActiveBackgroundOverlay | Sets video-wide overlay when controls are active | Optional. Default = true.|
+| controlsColor | Sets color of controls like play, pause, etc. | Optional. |
 | startAt | Sets the starting position of the video. | Optional. |
 | showThumbnail | Shows thumbnail when video is initializing. | Optional. Default = true |
 | keepScreenOn | Triggers screen to be on when not in fullscreen. | Optional. Default = true |

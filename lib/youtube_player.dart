@@ -37,7 +37,6 @@ import 'dart:async';
 import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:screen/screen.dart';
 import 'package:youtube_player/controls.dart';
 
 enum YoutubeQuality { LOW, MEDIUM, HIGH, HD, FHD }
@@ -718,8 +717,9 @@ class YoutubePlayer extends StatefulWidget {
   final double aspectRatio;
   final double width;
   final bool autoPlay;
-  final Color controlsColor;
-  final Color controlsBackgroundColor;
+  final bool isLive;
+  final ControlsColor controlsColor;
+  final bool controlsActiveBackgroundOverlay;
   final Duration startAt;
   final bool showThumbnail;
   final bool keepScreenOn;
@@ -735,13 +735,14 @@ class YoutubePlayer extends StatefulWidget {
       @required this.quality,
       this.aspectRatio = 16 / 9,
       this.width,
+      this.isLive = false,
       this.autoPlay = true,
-      this.controlsColor = Colors.white,
-      this.controlsBackgroundColor = Colors.transparent,
+      this.controlsColor,
       this.startAt,
       this.showThumbnail = true,
       this.keepScreenOn = true,
       this.showVideoProgressbar = true,
+      this.controlsActiveBackgroundOverlay = false,
       this.playerMode = YoutubePlayerMode.DEFAULT,
       this.onError,
       this.onVideoEnded,
@@ -755,6 +756,14 @@ class YoutubePlayer extends StatefulWidget {
   State<StatefulWidget> createState() {
     return _YoutubePlayerState();
   }
+
+  static Future<double> get brightness async =>
+      (await _channel.invokeMethod('brightness')) as double;
+  static Future setBrightness(double brightness) =>
+      _channel.invokeMethod('setBrightness', {"brightness": brightness});
+  static Future<bool> get isKeptOn async =>
+      (await _channel.invokeMethod('isKeptOn')) as bool;
+  static Future keepOn(bool on) => _channel.invokeMethod('keepOn', {"on": on});
 }
 
 class _YoutubePlayerState extends State<YoutubePlayer> {
@@ -766,6 +775,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   bool _showControls;
   String _selectedQuality;
   bool _showVideoProgressBar = true;
+  ControlsColor controlsColor;
 
   @override
   void initState() {
@@ -778,7 +788,23 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     }
     if (videoId != null)
       _videoController = VideoPlayerController.network(
-          videoId + "sarbagya" + _selectedQuality);
+          "${videoId}sarbagya${_selectedQuality}sarbagya${widget.isLive}");
+    if (controlsColor == null) {
+      controlsColor = ControlsColor();
+    } else {
+      if (widget.controlsActiveBackgroundOverlay)
+        controlsColor = ControlsColor(
+          buttonColor: widget.controlsColor.buttonColor,
+          controlsBackgroundColor: Colors.transparent,
+          playPauseColor: widget.controlsColor.playPauseColor,
+          progressBarPlayedColor: widget.controlsColor.progressBarPlayedColor,
+          progressBarBackgroundColor:
+              widget.controlsColor.progressBarBackgroundColor,
+          seekBarPlayedColor: widget.controlsColor.seekBarPlayedColor,
+          seekBarUnPlayedColor: widget.controlsColor.seekBarUnPlayedColor,
+          timerColor: widget.controlsColor.timerColor,
+        );
+    }
     super.initState();
   }
 
@@ -813,7 +839,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   @override
   Widget build(BuildContext context) {
     if (widget.keepScreenOn) {
-      Screen.keepOn(true);
+      YoutubePlayer.keepOn(true);
     }
     width = widget.width ?? MediaQuery.of(context).size.width;
     height = 1 / widget.aspectRatio * width;
@@ -823,7 +849,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         videoId = getIdFromUrl(widget.source);
         if (videoId != null) {
           _videoController = VideoPlayerController.network(
-              videoId + "sarbagya" + _selectedQuality);
+              "${videoId}sarbagya${_selectedQuality}sarbagya${widget.isLive}");
           initializeYTController();
         } else {
           widget.onError("Malformed Video ID or URL");
@@ -835,7 +861,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
         videoId = widget.source;
         if (videoId != null) {
           _videoController = VideoPlayerController.network(
-              videoId + "sarbagya" + _selectedQuality);
+              "${videoId}sarbagya${_selectedQuality}sarbagya${widget.isLive}");
           initializeYTController();
         }
       }
@@ -856,6 +882,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       child: AspectRatio(
         aspectRatio: _videoController.value.aspectRatio,
         child: Stack(
+          alignment: Alignment(0, 0),
           children: <Widget>[
             AnimatedContainer(
               duration: Duration(seconds: 1),
@@ -889,49 +916,56 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       ),
                     ),
             ),
-            _videoController.value.initialized &&
-                    widget.playerMode == YoutubePlayerMode.DEFAULT
-                ? Controls(
-                    height: _height,
-                    width: _width,
-                    controller: _videoController,
-                    showControls: _showControls,
-                    videoId: videoId,
-                    defaultQuality: _selectedQuality,
-                    isFullScreen: _isFullScreen,
-                    controlsBackgroundColor: widget.controlsBackgroundColor,
-                    controlsColor: widget.controlsColor,
-                    controlsShowingCallback: (showing) {
-                      if (mounted) {
-                        Timer(Duration(seconds: 1), () {
-                          setState(() {
-                            _showVideoProgressBar = !showing;
+            AnimatedContainer(
+              duration: Duration(seconds: 1),
+              height: _height,
+              width: _width,
+              child: _videoController.value.initialized &&
+                      widget.playerMode == YoutubePlayerMode.DEFAULT
+                  ? Controls(
+                      height: _height,
+                      width: _width,
+                      isLive: widget.isLive,
+                      controller: _videoController,
+                      showControls: _showControls,
+                      videoId: videoId,
+                      defaultQuality: _selectedQuality,
+                      isFullScreen: _isFullScreen,
+                      controlsActiveBackgroundOverlay:
+                          widget.controlsActiveBackgroundOverlay,
+                      controlsColor: controlsColor,
+                      controlsShowingCallback: (showing) {
+                        if (mounted) {
+                          Timer(Duration(seconds: 1), () {
+                            setState(() {
+                              _showVideoProgressBar = !showing;
+                            });
                           });
+                        }
+                      },
+                      qualityChangeCallback: (quality, position) {
+                        _videoController.pause();
+                        setState(() {
+                          _selectedQuality = quality;
+                          if (videoId != null)
+                            _videoController = VideoPlayerController.network(
+                                "${videoId}sarbagya${_selectedQuality}sarbagya${widget.isLive}");
                         });
-                      }
-                    },
-                    qualityChangeCallback: (quality, position) {
-                      _videoController.pause();
-                      setState(() {
-                        _selectedQuality = quality;
-                        if (videoId != null)
-                          _videoController = VideoPlayerController.network(
-                              videoId + "sarbagya" + _selectedQuality);
-                      });
-                      _videoController.initialize().then((_) {
-                        _videoController.seekTo(position);
-                        _videoController.play();
-                        setState(() {});
-                      });
-                      if (widget.callbackController != null) {
-                        widget.callbackController(_videoController);
-                      }
-                    },
-                    fullScreenCallback: () async {
-                      await _pushFullScreenWidget(context);
-                    },
-                  )
-                : Container(),
+                        _videoController.initialize().then((_) {
+                          _videoController.seekTo(position);
+                          _videoController.play();
+                          setState(() {});
+                        });
+                        if (widget.callbackController != null) {
+                          widget.callbackController(_videoController);
+                        }
+                      },
+                      fullScreenCallback: () async {
+                        await _pushFullScreenWidget(context);
+                      },
+                    )
+                  : Container(),
+            ),
             _videoController.value.initialized &&
                     _showVideoProgressBar &&
                     widget.showVideoProgressbar
@@ -943,7 +977,9 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                         _videoController,
                         allowScrubbing: true,
                         colors: VideoProgressColors(
-                          playedColor: widget.controlsColor,
+                          backgroundColor:
+                              controlsColor.progressBarBackgroundColor,
+                          playedColor: controlsColor.progressBarPlayedColor,
                         ),
                         padding: EdgeInsets.all(0.0),
                       ),
@@ -1037,4 +1073,26 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       },
     );
   }
+}
+
+class ControlsColor {
+  final Color timerColor;
+  final Color seekBarPlayedColor;
+  final Color seekBarUnPlayedColor;
+  final Color buttonColor;
+  final Color playPauseColor;
+  final Color progressBarPlayedColor;
+  final Color progressBarBackgroundColor;
+  final Color controlsBackgroundColor;
+
+  ControlsColor({
+    this.buttonColor = Colors.white,
+    this.playPauseColor = Colors.white,
+    this.progressBarPlayedColor = Colors.red,
+    this.progressBarBackgroundColor = Colors.transparent,
+    this.seekBarUnPlayedColor = Colors.grey,
+    this.seekBarPlayedColor = Colors.red,
+    this.timerColor = Colors.white,
+    this.controlsBackgroundColor = Colors.transparent,
+  });
 }

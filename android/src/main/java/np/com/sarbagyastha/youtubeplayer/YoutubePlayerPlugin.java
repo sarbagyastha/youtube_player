@@ -41,10 +41,14 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.media.AudioManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
+import android.provider.Settings;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.Surface;
+import android.view.WindowManager;
+
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.ExoPlaybackException;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -83,11 +87,19 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.flutter.view.FlutterNativeView;
 import io.flutter.view.TextureRegistry;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 
 public class YoutubePlayerPlugin implements MethodCallHandler {
@@ -95,6 +107,8 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
     private static final String TAG = "YoutubePlayerPlugin";
 
     private static class YoutubePlayer {
+
+        private static String liveStreamUrl;
 
         private SimpleExoPlayer exoPlayer;
 
@@ -118,7 +132,10 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
             this.textureEntry = textureEntry;
 
             String[] splittedDataSource = dataSource.split("sarbagya");
-            loadStreamLinks(context, "https://www.youtube.com/watch?v=" + splittedDataSource[0], splittedDataSource[1], result);
+            if(splittedDataSource[2].equals("true")){
+                new PlayLiveStreamVideo("https://www.youtube.com/watch?v=" + splittedDataSource[0],result,context).execute();
+            }
+            else loadStreamLinks(context, "https://www.youtube.com/watch?v=" + splittedDataSource[0], splittedDataSource[1], result);
         }
 
         @SuppressLint("StaticFieldLeak")
@@ -274,6 +291,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                         }
                         a = ytFiles.get(140).getUrl();
 
+
                         DataSource.Factory dataSourceFactory;
                         dataSourceFactory =
                                 new DefaultHttpDataSourceFactory(
@@ -294,6 +312,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                 }
             }.extract(url, true, true);
         }
+
 
         private MediaSource buildMediaSource(
                 Uri vuri,Uri auri, DataSource.Factory mediaDataSourceFactory, Context context) {
@@ -323,9 +342,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                     return new MergingMediaSource(vDSource,aDSource);
                 case C.TYPE_HLS:
                     Log.i(TAG,"Media Type: HLS");
-                    HlsMediaSource vHSource =  new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(vuri);
-                    HlsMediaSource aHSource =  new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(auri);
-                    return new MergingMediaSource(vHSource,aHSource);
+                    return new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(vuri);
                 case C.TYPE_OTHER:
                     Log.i(TAG,"Media Type: GENERAL");
                     ExtractorMediaSource vESource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
@@ -340,6 +357,94 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                     throw new IllegalStateException("Unsupported type: " + type);
                 }
             }
+        }
+
+        @SuppressLint("StaticFieldLeak")
+        public class PlayLiveStreamVideo extends AsyncTask<Void , Void ,Void> {
+            String server_response;
+            String youtubeLink;
+            Result result;
+            Context context;
+
+            PlayLiveStreamVideo(String youtubeLink, Result result, Context context){
+                this.youtubeLink = youtubeLink;
+                this.result = result;
+                this.context = context;
+            }
+
+            @Override
+            protected Void doInBackground(Void... params) {
+                URL url;
+                HttpURLConnection urlConnection;
+                try {
+                    url = new URL(youtubeLink);
+                    urlConnection = (HttpURLConnection) url.openConnection();
+                    int responseCode = urlConnection.getResponseCode();
+                    if(responseCode == HttpURLConnection.HTTP_OK){
+                        server_response = readStream(urlConnection.getInputStream());
+                        if(server_response.contains("hlsManifestUrl")) {
+                            String rawUrl = server_response.split("hlsManifestUrl")[1];
+                            rawUrl = rawUrl.split("playbackTracking")[0];
+                            rawUrl = rawUrl.replace("\"","");
+                            rawUrl = rawUrl.replace("\\","");
+                            rawUrl = rawUrl.replace("}","");
+                            rawUrl = rawUrl.replace(",","");
+                            server_response = rawUrl.substring(1);
+                        }else{
+                            Log.i(TAG,"This is not a Live Video. Set isLive = false");
+                        }
+                    }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void v) {
+                super.onPostExecute(v);
+                DataSource.Factory dataSourceFactory;
+                dataSourceFactory =
+                        new DefaultHttpDataSourceFactory(
+                                "ExoPlayer",
+                                null,
+                                DefaultHttpDataSource.DEFAULT_CONNECT_TIMEOUT_MILLIS,
+                                DefaultHttpDataSource.DEFAULT_READ_TIMEOUT_MILLIS,
+                                true);
+                Uri uri = Uri.parse(server_response);
+                if(server_response.contains("https")){
+                    TrackSelector trackSelector = new DefaultTrackSelector();
+                    exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
+                    MediaSource mediaSource = buildMediaSource(uri, uri, dataSourceFactory, context);
+                    exoPlayer.prepare(mediaSource);
+                    setupYoutubePlayer(eventChannel, textureEntry, result);
+                }
+            }
+        }
+
+        private String readStream(InputStream in) {
+            BufferedReader reader = null;
+            StringBuffer response = new StringBuffer();
+            try {
+                reader = new BufferedReader(new InputStreamReader(in));
+                String line = "";
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            return response.toString();
         }
 
         @SuppressWarnings("deprecation")
@@ -557,6 +662,34 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                 }
                 break;
             }
+            //Screen Start
+            case "brightness":
+                result.success(getBrightness());
+                break;
+            case "setBrightness":
+                double brightness = call.argument("brightness");
+                WindowManager.LayoutParams layoutParams = registrar.activity().getWindow().getAttributes();
+                layoutParams.screenBrightness = (float)brightness;
+                registrar.activity().getWindow().setAttributes(layoutParams);
+                result.success(null);
+                break;
+            case "isKeptOn":
+                int flags = registrar.activity().getWindow().getAttributes().flags;
+                result.success((flags & WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) != 0) ;
+                break;
+            case "keepOn":
+                Boolean on = call.argument("on");
+                if (on) {
+                    Log.i(TAG,"Keeping screen on");
+                    registrar.activity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                }
+                else{
+                    Log.i(TAG,"Not keeping screen on");
+                    registrar.activity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                }
+                result.success(null);
+                break;
+            //Screen End
             default:
             {
                 long textureId = ((Number) call.argument("textureId")).longValue();
@@ -610,4 +743,18 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                 break;
         }
     }
+
+    private float getBrightness(){
+        float result = registrar.activity().getWindow().getAttributes().screenBrightness;
+        if (result < 0) { // the application is using the system brightness
+            try {
+                result = Settings.System.getInt(registrar.context().getContentResolver(), Settings.System.SCREEN_BRIGHTNESS) / (float)255;
+            } catch (Settings.SettingNotFoundException e) {
+                result = 1.0f;
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
 }
