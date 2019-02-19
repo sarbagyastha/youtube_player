@@ -16,11 +16,12 @@ matrix:
             - ubuntu-toolchain-r-test
           packages:
             - libstdc++6
+            - lib32stdc++6
             - fonts-droid
 
       before_script:
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
-        - ./flutter/bin/flutter doctor
+        - ./flutter/bin/flutter doctor -v
         - gem install coveralls-lcov
 
       script:
@@ -65,6 +66,8 @@ matrix:
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
         - cd example
+        - flutter doctor --android-licenses
+        - flutter doctor -v
       script:
         - flutter -v build apk
 
