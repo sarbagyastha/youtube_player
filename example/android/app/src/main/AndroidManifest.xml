@@ -15,7 +15,6 @@
     <application
         android:name="io.flutter.app.FlutterApplication"
         android:label="youtube_player_example"
-        tools:replace="android:label"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"

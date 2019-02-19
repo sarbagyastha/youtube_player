@@ -167,10 +167,12 @@ class _ControlsState extends State<Controls> {
                   seconds: widget.controller.value.position.inSeconds + 10),
             );
             Timer(Duration(seconds: 2), () {
-              setState(() {
-                _showFast = false;
-                seekCount = 0;
-              });
+              if (mounted) {
+                setState(() {
+                  _showFast = false;
+                  seekCount = 0;
+                });
+              }
             });
           }
         },
@@ -217,10 +219,12 @@ class _ControlsState extends State<Controls> {
                   seconds: widget.controller.value.position.inSeconds - 10),
             );
             Timer(Duration(seconds: 2), () {
-              setState(() {
-                _showRewind = false;
-                seekCount = 0;
-              });
+              if (mounted) {
+                setState(() {
+                  _showRewind = false;
+                  seekCount = 0;
+                });
+              }
             });
           }
         },
@@ -253,10 +257,12 @@ class _ControlsState extends State<Controls> {
 
   void onTapAction() {
     if (_timer != null) _timer.cancel();
-    setState(() {
-      _showControls = !_showControls;
-      widget.controlsShowingCallback(_showControls);
-    });
+    if (mounted) {
+      setState(() {
+        _showControls = !_showControls;
+        widget.controlsShowingCallback(_showControls);
+      });
+    }
     if (_showControls) {
       _timer = Timer(Duration(seconds: 5), () {
         if (mounted) {
@@ -280,10 +286,12 @@ class _ControlsState extends State<Controls> {
           splashColor: Colors.grey[350],
           borderRadius: BorderRadius.circular(100.0),
           onTap: () {
-            setState(() {
-              _showControls = false;
-              widget.controlsShowingCallback(_showControls);
-            });
+            if (mounted) {
+              setState(() {
+                _showControls = false;
+                widget.controlsShowingCallback(_showControls);
+              });
+            }
             if (!_buffering) {
               togglePlaying();
             }
@@ -381,9 +389,11 @@ class _ControlsState extends State<Controls> {
                   inactiveColor: widget.controlsColor.seekBarUnPlayedColor,
                   value: currentPosition,
                   onChanged: (position) {
-                    setState(() {
-                      currentPosition = position;
-                    });
+                    if (mounted) {
+                      setState(() {
+                        currentPosition = position;
+                      });
+                    }
                     widget.controller.seekTo(
                         Duration(seconds: (position * totalLength).floor()));
                   },
@@ -435,10 +445,12 @@ class _ControlsState extends State<Controls> {
   void togglePlaying() {
     if (widget.controller.value.isPlaying == true) {
       widget.controller.pause();
-      setState(() {
-        _showControls = true;
-        widget.controlsShowingCallback(_showControls);
-      });
+      if (mounted) {
+        setState(() {
+          _showControls = true;
+          widget.controlsShowingCallback(_showControls);
+        });
+      }
     } else {
       widget.controller.play();
     }

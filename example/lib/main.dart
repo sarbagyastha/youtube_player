@@ -31,7 +31,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _idController = TextEditingController();
   TextEditingController _seekToController = TextEditingController();
   TextEditingController _volumeController = TextEditingController();
-  VideoPlayerController _controller;
+  VideoPlayerController _videoController;
   String position = "Get Current Position";
   String status = "Get Player Status";
   String videoDuration = "Get Video Duration";
@@ -43,24 +43,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        actions: <Widget>[
-          IconButton(
-            icon: Icon(Icons.grid_on),
-            onPressed: () {
-              if(_controller.value.initialized){
-                _controller.pause();
-              }
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => VideoList(),
-                ),
-              );
-            } ,
-          ),
-        ],
       ),
       body: SingleChildScrollView(
         child: Column(
+          //key: GlobalKey(),
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             YoutubePlayer(
@@ -69,17 +55,17 @@ class _MyHomePageState extends State<MyHomePage> {
               quality: YoutubeQuality.HD,
               aspectRatio: 16 / 9,
               autoPlay: true,
-              showThumbnail: false,
+              startFullScreen: false,
               keepScreenOn: true,
               controlsActiveBackgroundOverlay: true,
               playerMode: YoutubePlayerMode.DEFAULT,
               callbackController: (controller) {
-                _controller = controller;
+                _videoController = controller;
               },
               onError: (error) {
                 print(error);
               },
-              onVideoEnded: () => print("Video Ended"),
+              onVideoEnded: () => _showThankYouDialog(),
             ),
             SizedBox(
               height: 10.0,
@@ -124,18 +110,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     children: <Widget>[
                       IconButton(
                         icon: Icon(Icons.play_arrow),
-                        onPressed: () => _controller.value.isPlaying
+                        onPressed: () => _videoController.value.isPlaying
                             ? null
-                            : _controller.play(),
+                            : _videoController.play(),
                       ),
                       IconButton(
                         icon: Icon(Icons.pause),
-                        onPressed: () => _controller.pause(),
+                        onPressed: () => _videoController.pause(),
                       ),
                       IconButton(
                         icon: Icon(isMute ? Icons.volume_off : Icons.volume_up),
                         onPressed: () {
-                          _controller.setVolume(isMute ? 1 : 0);
+                          _videoController.setVolume(isMute ? 1 : 0);
                           setState(
                             () {
                               isMute = !isMute;
@@ -158,7 +144,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.all(5.0),
                         child: OutlineButton(
                             child: Text("Seek"),
-                            onPressed: () => _controller.seekTo(Duration(
+                            onPressed: () => _videoController.seekTo(Duration(
                                 seconds: int.parse(_seekToController.text)))),
                       ),
                     ),
@@ -176,14 +162,14 @@ class _MyHomePageState extends State<MyHomePage> {
                         padding: EdgeInsets.all(5.0),
                         child: OutlineButton(
                             child: Text("Adjust"),
-                            onPressed: () => _controller.setVolume(
+                            onPressed: () => _videoController.setVolume(
                                 double.parse(_volumeController.text) / 10)),
                       ),
                     ),
                   ),
                   OutlineButton(
                     child: Text(position),
-                    onPressed: () => _controller.position.then(
+                    onPressed: () => _videoController.position.then(
                           (currentPosition) {
                             setState(
                               () {
@@ -200,9 +186,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: () {
                       setState(
                         () {
-                          videoDuration =
-                              _controller.value.duration.inSeconds.toString() +
-                                  " seconds";
+                          videoDuration = _videoController
+                                  .value.duration.inSeconds
+                                  .toString() +
+                              " seconds";
                         },
                       );
                     },
@@ -211,7 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Text(status),
                       onPressed: () {
                         setState(() {
-                          _controller.value.isPlaying
+                          _videoController.value.isPlaying
                               ? status = "Playing"
                               : status = "Paused";
                         });
@@ -225,79 +212,15 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-}
-
-class VideoList extends StatefulWidget {
-  @override
-  _VideoListState createState() => _VideoListState();
-}
-
-class _VideoListState extends State<VideoList> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("VideoGrid"),
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(colors: [Colors.red, Colors.pink]),
-        ),
-        padding: EdgeInsets.all(40.0),
-        child: ListView(
-          children: <Widget>[
-            YoutubePlayer(
-              context: context,
-              quality: YoutubeQuality.HD,
-              source: "gQDByCdjUXw",
-              autoPlay: false,
-              width: MediaQuery.of(context).size.width - 80.0,
-            ),
-            SizedBox(height: 40.0,),
-            YoutubePlayer(
-              context: context,
-              quality: YoutubeQuality.HD,
-              source: "4993sBLAzGA",
-              isLive: true,
-              autoPlay: false,
-              width: MediaQuery.of(context).size.width - 80.0,
-            ),
-            SizedBox(height: 40.0,),
-            YoutubePlayer(
-              context: context,
-              quality: YoutubeQuality.HD,
-              source: "wzFPyTMdoNs",
-              autoPlay: false,
-              width: MediaQuery.of(context).size.width - 80.0,
-            ),
-            SizedBox(height: 40.0,),
-            YoutubePlayer(
-              context: context,
-              quality: YoutubeQuality.HD,
-              source: "NsaDFtX8t44",
-              autoPlay: false,
-              width: MediaQuery.of(context).size.width - 80.0,
-            ),
-            SizedBox(height: 40.0,),
-            YoutubePlayer(
-              context: context,
-              quality: YoutubeQuality.HD,
-              source: "40kklGefAcs",
-              autoPlay: false,
-              width: MediaQuery.of(context).size.width - 80.0,
-            ),
-            SizedBox(height: 40.0,),
-            YoutubePlayer(
-              context: context,
-              quality: YoutubeQuality.HD,
-              source: "AwiP3vxYyZE",
-              autoPlay: false,
-              width: MediaQuery.of(context).size.width - 80.0,
-            ),
-          ],
-        ),
-      ),
+  void _showThankYouDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Video Ended"),
+          content:  Text("Thank you for trying the plugin!"),
+        );
+      },
     );
   }
 }
-

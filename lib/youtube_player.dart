@@ -724,6 +724,7 @@ class YoutubePlayer extends StatefulWidget {
   final bool showThumbnail;
   final bool keepScreenOn;
   final bool showVideoProgressbar;
+  final bool startFullScreen;
   final YPCallBack callbackController;
   final ErrorCallback onError;
   final VoidCallback onVideoEnded;
@@ -739,9 +740,10 @@ class YoutubePlayer extends StatefulWidget {
       this.autoPlay = true,
       this.controlsColor,
       this.startAt,
-      this.showThumbnail = true,
+      this.showThumbnail = false,
       this.keepScreenOn = true,
       this.showVideoProgressbar = true,
+      this.startFullScreen = false,
       this.controlsActiveBackgroundOverlay = false,
       this.playerMode = YoutubePlayerMode.DEFAULT,
       this.onError,
@@ -775,6 +777,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   bool _showControls;
   String _selectedQuality;
   bool _showVideoProgressBar = true;
+  bool _videoEndListenerCalled;
   ControlsColor controlsColor;
 
   @override
@@ -817,15 +820,23 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   void initializeYTController() {
     _videoController.initialize().then((_) {
+      _videoEndListenerCalled = false;
       if (widget.autoPlay) _videoController.play();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
+      if (widget.startFullScreen) {
+        _pushFullScreenWidget(context);
+      }
       if (widget.startAt != null) _videoController.seekTo(widget.startAt);
       _videoController.addListener(() {
         if (_videoController.value.duration != null &&
             _videoController.value.position != null) {
           if (_videoController.value.position.inSeconds ==
-              _videoController.value.duration.inSeconds) {
+                  _videoController.value.duration.inSeconds &&
+              !_videoEndListenerCalled) {
             widget.onVideoEnded();
+            _videoEndListenerCalled = true;
           }
         }
       });
@@ -945,16 +956,20 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       },
                       qualityChangeCallback: (quality, position) {
                         _videoController.pause();
-                        setState(() {
-                          _selectedQuality = quality;
-                          if (videoId != null)
-                            _videoController = VideoPlayerController.network(
-                                "${videoId}sarbagya${_selectedQuality}sarbagya${widget.isLive}");
-                        });
+                        if (mounted) {
+                          setState(() {
+                            _selectedQuality = quality;
+                            if (videoId != null)
+                              _videoController = VideoPlayerController.network(
+                                  "${videoId}sarbagya${_selectedQuality}sarbagya${widget.isLive}");
+                          });
+                        }
                         _videoController.initialize().then((_) {
                           _videoController.seekTo(position);
                           _videoController.play();
-                          setState(() {});
+                          if (mounted) {
+                            setState(() {});
+                          }
                         });
                         if (widget.callbackController != null) {
                           widget.callbackController(_videoController);

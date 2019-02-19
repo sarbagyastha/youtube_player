@@ -43,6 +43,6 @@ android {
         implementation 'com.google.android.exoplayer:exoplayer-hls:2.9.5'
         implementation 'com.google.android.exoplayer:exoplayer-dash:2.9.5'
         implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.9.5'
-        implementation 'com.github.HaarigerHarald:android-youtubeExtractor:master-SNAPSHOT'
+        implementation 'com.github.sarbagyastha:android-youtubeExtractor:v2.3.0'
     }
 }
