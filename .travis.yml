@@ -43,7 +43,9 @@ matrix:
           - tools
           - platform-tools
           - build-tools-28.0.3
+          - build-tools-27.0.3
           - android-28
+          - android-27
           - sys-img-armeabi-v7a-google_apis-28
           - extra-android-m2repository
           - extra-google-m2repository
@@ -67,7 +69,6 @@ matrix:
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
         - cd example
-        - flutter doctor --android-licenses
         - flutter doctor -v
       script:
         - flutter -v build apk
