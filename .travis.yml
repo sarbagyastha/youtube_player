@@ -1,9 +1,8 @@
 matrix:
-  # This causes the build to complete immediately upon first failure or once
-  # required jobs are green.
+  # This causes the build to complete immediately upon first failure or once required jobs are green.
   fast_finish: true
 
-  # Building APK/IPA takes a long time; do not wait for them to finish.
+  # Not waiting for APK build to finish.
   allow_failures:
   - env: JOB=APK
 
