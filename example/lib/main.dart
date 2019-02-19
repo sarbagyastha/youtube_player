@@ -43,10 +43,10 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(
-          //key: GlobalKey(),
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             YoutubePlayer(
