@@ -9,26 +9,26 @@ matrix:
 
   include:
     - env: JOB=PR
-    os: linux
-    sudo: false
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - libstdc++6
-        - fonts-droid
+      os: linux
+      sudo: false
+      addons:
+        apt:
+          sources:
+            - ubuntu-toolchain-r-test
+          packages:
+            - libstdc++6
+            - fonts-droid
 
-    before_script:
-    - git clone https://github.com/flutter/flutter.git -b beta --depth 1
-    - ./flutter/bin/flutter doctor
-    - gem install coveralls-lcov
+      before_script:
+        - git clone https://github.com/flutter/flutter.git -b beta --depth 1
+        - ./flutter/bin/flutter doctor
+        - gem install coveralls-lcov
 
-    script:
-    - ./flutter/bin/flutter test --coverage
+      script:
+        - ./flutter/bin/flutter test --coverage
 
-    after_success:
-    - coveralls-lcov coverage/lcov.info
+      after_success:
+        - coveralls-lcov coverage/lcov.info
 
     # Builds an APK.
     - env: JOB=APK
