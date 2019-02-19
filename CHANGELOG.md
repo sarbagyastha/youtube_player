@@ -1,3 +1,10 @@
+## [3.1.0] - February 19, 2019.
+
+* [Fixed] Manifest Merger error.
+* [Feature Added] startFullScreen property is added.
+* Upgraded dependencies.
+* Minor bug fixes.
+
 ## [3.0.0] - February 16, 2019.
 
 * **Breaking change**. [controlsBackgroundColor] is removed. [controlsColor] property is now changed to class.

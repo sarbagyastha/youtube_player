@@ -88,6 +88,7 @@ YoutubePlayer(
 | showThumbnail | Shows thumbnail when video is initializing. | Optional. Default = true |
 | keepScreenOn | Triggers screen to be on when not in fullscreen. | Optional. Default = true |
 | showVideoProgressBar | Shows progressbar below the video. | Optional. Default = true |
+| startFullScreen | Start video in a full screen. | Optional. Default = false |
 | playerMode | Sets player mode. YoutubePlayerMode.NO_CONTROLS hides the controls from player. *Useful when custom controls are to be build.* | Optional. Default = YoutubePlayerMode.DEFAULT |
 | onError | Callback which reports error. | Optional.|
 | onVideoEnded | Callback which reports end of video. | Optional.|
