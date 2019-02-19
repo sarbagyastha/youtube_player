@@ -63,6 +63,7 @@ matrix:
         - export GRADLE_HOME=$PWD/gradle-5.2.1
         - export PATH=$GRADLE_HOME/bin:$PATH
         - git clone https://github.com/flutter/flutter.git -b beta --depth 1
+        - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
         - cd example
       script:
         - ./flutter/bin/flutter -v build apk
