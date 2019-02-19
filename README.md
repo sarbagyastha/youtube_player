@@ -1,7 +1,6 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/pub-v3.1.0-green.svg)](https://pub.dartlang.org/packages/youtube_player)       
-[![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player)
+[![pub package](https://img.shields.io/badge/pub-v3.1.0-green.svg)](https://pub.dartlang.org/packages/youtube_player)[![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player)
 [![Coverage Status](https://coveralls.io/repos/github/sarbagyastha/youtube_player/badge.svg?branch=master)](https://coveralls.io/github/sarbagyastha/youtube_player?branch=master)
 [![licence](https://img.shields.io/badge/Licence-Apache%202-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
