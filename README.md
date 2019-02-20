@@ -1,8 +1,8 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/pub-v3.1.0-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player)
-[![Coverage Status](https://coveralls.io/repos/github/sarbagyastha/youtube_player/badge.svg?branch=master)](https://coveralls.io/github/sarbagyastha/youtube_player?branch=master)
-[![licence](https://img.shields.io/badge/Licence-Apache%202-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
+[![Pub Package](https://img.shields.io/badge/pub-v3.1.0-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player)
+[![Coverage Status](https://codecov.io/gh/sarbagyastha/youtube_player/branch/master/graph/badge.svg)](https://codecov.io/gh/sarbagyastha/youtube_player)
+[![Licence](https://img.shields.io/badge/Licence-Apache%202-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
 
 A flutter plugin to play Youtube Videos "inline" without API Key in range of Qualities(240p, 360p, 480p, 720p and 1080p).
