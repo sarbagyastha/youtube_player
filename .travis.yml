@@ -30,7 +30,7 @@ matrix:
       after_success:
         - bash <(curl -s https://codecov.io/bash)
 
-    # Builds an APK.
+    # Building an APK.
     - env: JOB=APK
       os: linux
       language: android
@@ -61,6 +61,7 @@ matrix:
             - libstdc++6
             - lib32stdc++6
             - fonts-droid
+            
       before_script:
         - wget http://services.gradle.org/distributions/gradle-5.2.1-bin.zip
         - unzip -qq gradle-5.2.1-bin.zip
@@ -70,8 +71,12 @@ matrix:
         - export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
         - cd example
         - flutter doctor -v
+        
       script:
-        - flutter -v build apk
+        - flutter -v build apk --coverage --coverage-path=lcov.info
+        
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
 
 cache:
   directories:
