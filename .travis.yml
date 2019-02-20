@@ -73,10 +73,7 @@ matrix:
         - flutter doctor -v
         
       script:
-        - flutter -v build apk --coverage --coverage-path=lcov.info
-        
-      after_success:
-        - bash <(curl -s https://codecov.io/bash)
+        - flutter -v build apk
 
 cache:
   directories:
