@@ -130,14 +130,17 @@ YoutubePlayer(
 
 [Example sources](https://github.com/sarbagyastha/youtube_player/tree/master/example)
 
+
 ### Limitation
 * Only Available for Android (Currently)
+
 
 ### Todos
 * Support for ios
 * Adaptive playback as per the internet bandwidth
 
-
+### Download
+[Download apk](youtube_player_example.apk) and try the plugin.
 
 ***Credit***
 
