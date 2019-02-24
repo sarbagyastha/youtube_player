@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:youtube_player/youtube_player.dart';
 
 void main() => runApp(MyApp());
@@ -28,6 +29,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+  static const platform = const MethodChannel("np.com.sarbagyastha.example");
   TextEditingController _idController = TextEditingController();
   TextEditingController _seekToController = TextEditingController();
   double _volume = 1.0;
@@ -35,11 +37,18 @@ class _MyHomePageState extends State<MyHomePage> {
   String position = "Get Current Position";
   String status = "Get Player Status";
   String videoDuration = "Get Video Duration";
-  String id = "7QUtEmBT_-w";
+  String _source = "7QUtEmBT_-w";
   bool isMute = false;
 
   @override
+  void initState() {
+    getSharedVideoUrl();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    getSharedVideoUrl();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -51,7 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
           children: <Widget>[
             YoutubePlayer(
               context: context,
-              source: id,
+              source: _source,
               quality: YoutubeQuality.HD,
               aspectRatio: 16 / 9,
               autoPlay: true,
@@ -88,7 +97,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   InkWell(
                     onTap: () {
                       setState(() {
-                        id = _idController.text;
+                        _source = _idController.text;
                       });
                     },
                     child: Container(
@@ -155,7 +164,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Row(
                     children: <Widget>[
-                      Text("Volume", style: TextStyle(fontWeight: FontWeight.w300),),
+                      Text(
+                        "Volume",
+                        style: TextStyle(fontWeight: FontWeight.w300),
+                      ),
                       Expanded(
                         child: Slider(
                           inactiveColor: Colors.transparent,
@@ -163,8 +175,8 @@ class _MyHomePageState extends State<MyHomePage> {
                           min: 0.0,
                           max: 1.0,
                           divisions: 10,
-                          label: '${(_volume*10).round()}',
-                          onChanged: (value){
+                          label: '${(_volume * 10).round()}',
+                          onChanged: (value) {
                             setState(() {
                               _volume = value;
                             });
@@ -229,5 +241,20 @@ class _MyHomePageState extends State<MyHomePage> {
         );
       },
     );
+  }
+
+  getSharedVideoUrl() async {
+    print('triggered');
+    try {
+      var sharedData = await platform.invokeMethod("getSharedYoutubeVideoUrl");
+      if (sharedData != null) {
+        setState(() {
+          _source = sharedData;
+          print(_source);
+        });
+      }
+    } on PlatformException catch (e) {
+      print(e.message);
+    }
   }
 }
