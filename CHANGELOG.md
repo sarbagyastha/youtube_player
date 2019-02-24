@@ -3,6 +3,7 @@
 * [Improved] Reduced the footprint of the plugin by removing unnecessary dependencies.
 * [Feature Added] controlsTimeOut property is added.
 * Updated ExoPlayer to Version [2.9.6](https://github.com/google/ExoPlayer/releases/tag/r2.9.6_docs)
+* Sharing videos through Youtube App to Example App.
 * Minor improvements.
 
 ## [3.1.0] - February 19, 2019.
