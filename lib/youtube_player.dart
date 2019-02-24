@@ -34,7 +34,6 @@
 
 import 'dart:io';
 import 'dart:async';
-import 'package:meta/meta.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player/controls.dart';
@@ -950,7 +949,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       controlsTimeOut: widget.controlsTimeOut,
                       controlsShowingCallback: (showing) {
                         if (mounted) {
-                          Timer(Duration(milliseconds: 300), () {
+                          Timer(Duration(milliseconds: 600), () {
                             setState(() {
                               _showVideoProgressBar = !showing;
                             });

@@ -1,3 +1,7 @@
+## [3.1.1+1] - February 24, 2019.
+
+* Minor changes.
+
 ## [3.1.1] - February 24, 2019.
 
 * [Improved] Reduced the footprint of the plugin by removing unnecessary dependencies.

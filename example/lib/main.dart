@@ -48,7 +48,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    getSharedVideoUrl();
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
@@ -244,7 +243,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   getSharedVideoUrl() async {
-    print('triggered');
     try {
       var sharedData = await platform.invokeMethod("getSharedYoutubeVideoUrl");
       if (sharedData != null) {
