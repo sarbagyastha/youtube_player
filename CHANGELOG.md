@@ -1,4 +1,4 @@
-## [3.1.1+1] - February 24, 2019.
+## [3.1.1+2] - February 24, 2019.
 
 * Minor changes.
 
