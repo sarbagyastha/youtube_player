@@ -30,7 +30,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   TextEditingController _idController = TextEditingController();
   TextEditingController _seekToController = TextEditingController();
-  TextEditingController _volumeController = TextEditingController();
+  double _volume = 1.0;
   VideoPlayerController _videoController;
   String position = "Get Current Position";
   String status = "Get Player Status";
@@ -153,20 +153,26 @@ class _MyHomePageState extends State<MyHomePage> {
                   SizedBox(
                     height: 10.0,
                   ),
-                  TextField(
-                    controller: _volumeController,
-                    keyboardType: TextInputType.number,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      hintText: "Volume Level [0-10]",
-                      suffixIcon: Padding(
-                        padding: EdgeInsets.all(5.0),
-                        child: OutlineButton(
-                            child: Text("Adjust"),
-                            onPressed: () => _videoController.setVolume(
-                                double.parse(_volumeController.text) / 10)),
+                  Row(
+                    children: <Widget>[
+                      Text("Volume", style: TextStyle(fontWeight: FontWeight.w300),),
+                      Expanded(
+                        child: Slider(
+                          inactiveColor: Colors.transparent,
+                          value: _volume,
+                          min: 0.0,
+                          max: 1.0,
+                          divisions: 10,
+                          label: '${(_volume*10).round()}',
+                          onChanged: (value){
+                            setState(() {
+                              _volume = value;
+                            });
+                            _videoController.setVolume(_volume);
+                          },
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                   OutlineButton(
                     child: Text(position),
@@ -219,7 +225,7 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text("Video Ended"),
-          content:  Text("Thank you for trying the plugin!"),
+          content: Text("Thank you for trying the plugin!"),
         );
       },
     );

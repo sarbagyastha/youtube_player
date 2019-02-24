@@ -3,11 +3,12 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:youtube_player/controls.dart';
 import 'package:youtube_player/youtube_player.dart';
 
 class FakeController extends ValueNotifier<VideoPlayerValue>
     implements VideoPlayerController {
-  FakeController() : super(VideoPlayerValue(duration: null));
+  FakeController() : super(VideoPlayerValue(duration: Duration(seconds: 2)));
 
   @override
   Future<void> dispose() async {
@@ -38,6 +39,7 @@ class FakeController extends ValueNotifier<VideoPlayerValue>
   Future<void> play() async {}
   @override
   Future<void> setLooping(bool looping) async {}
+
 }
 
 void main() {
@@ -85,7 +87,9 @@ void main() {
     );
     expect(find.byKey(testKey), findsOneWidget);
   });
+
 }
+
 
 class YoutubePlayerTest extends StatefulWidget {
   const YoutubePlayerTest({Key key}) : super(key: key);
