@@ -60,16 +60,11 @@ import com.google.android.exoplayer2.audio.AudioAttributes;
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.source.dash.DashMediaSource;
-import com.google.android.exoplayer2.source.dash.DefaultDashChunkSource;
 import com.google.android.exoplayer2.source.hls.HlsMediaSource;
-import com.google.android.exoplayer2.source.smoothstreaming.DefaultSsChunkSource;
-import com.google.android.exoplayer2.source.smoothstreaming.SsMediaSource;
 import com.google.android.exoplayer2.source.MergingMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
@@ -99,7 +94,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
 
 public class YoutubePlayerPlugin implements MethodCallHandler {
@@ -108,7 +102,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
 
     private static class YoutubePlayer {
 
-        private static String liveStreamUrl;
+        //private static String liveStreamUrl;
 
         private SimpleExoPlayer exoPlayer;
 
@@ -304,7 +298,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
 
                         Uri vUri = Uri.parse(v);
                         Uri aUri = Uri.parse(a);
-                        MediaSource mediaSource = buildMediaSource(vUri, aUri, dataSourceFactory, context);
+                        MediaSource mediaSource = buildMediaSource(vUri, aUri, dataSourceFactory);
                         exoPlayer.prepare(mediaSource);
 
                         setupYoutubePlayer(eventChannel, textureEntry, result);
@@ -315,47 +309,22 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
 
 
         private MediaSource buildMediaSource(
-                Uri vuri,Uri auri, DataSource.Factory mediaDataSourceFactory, Context context) {
+                Uri vuri,Uri auri, DataSource.Factory mediaDataSourceFactory) {
             int type = Util.inferContentType(vuri.getLastPathSegment());
-            switch (type) {
-                case C.TYPE_SS:
-                    Log.i(TAG,"Media Type: SMOOTH STREAMING");
-                    SsMediaSource vSSource = new SsMediaSource.Factory(
-                            new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
-                            new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
-                            .createMediaSource(vuri);
-                    SsMediaSource aSSource = new SsMediaSource.Factory(
-                            new DefaultSsChunkSource.Factory(mediaDataSourceFactory),
-                            new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
-                            .createMediaSource(auri);
-                    return new MergingMediaSource(vSSource,aSSource);
-                case C.TYPE_DASH:
-                    Log.i(TAG,"Media Type: DASH");
-                    DashMediaSource vDSource = new DashMediaSource.Factory(
-                            new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
-                            new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
-                            .createMediaSource(vuri);
-                    DashMediaSource aDSource = new DashMediaSource.Factory(
-                            new DefaultDashChunkSource.Factory(mediaDataSourceFactory),
-                            new DefaultDataSourceFactory(context, null, mediaDataSourceFactory))
-                            .createMediaSource(auri);
-                    return new MergingMediaSource(vDSource,aDSource);
-                case C.TYPE_HLS:
-                    Log.i(TAG,"Media Type: HLS");
-                    return new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(vuri);
-                case C.TYPE_OTHER:
-                    Log.i(TAG,"Media Type: GENERAL");
-                    ExtractorMediaSource vESource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-                            .setExtractorsFactory(new DefaultExtractorsFactory())
-                            .createMediaSource(vuri);
-                    ExtractorMediaSource aESource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
-                            .setExtractorsFactory(new DefaultExtractorsFactory())
-                            .createMediaSource(auri);
-                    return new MergingMediaSource(vESource,aESource);
-                default:
-                {
-                    throw new IllegalStateException("Unsupported type: " + type);
-                }
+            if (type == C.TYPE_HLS) {
+                Log.i(TAG, "Media Type: HLS");
+                return new HlsMediaSource.Factory(mediaDataSourceFactory).createMediaSource(vuri);
+            } else if (type == C.TYPE_OTHER) {
+                Log.i(TAG, "Media Type: GENERAL");
+                ExtractorMediaSource vESource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                        .setExtractorsFactory(new DefaultExtractorsFactory())
+                        .createMediaSource(vuri);
+                ExtractorMediaSource aESource = new ExtractorMediaSource.Factory(mediaDataSourceFactory)
+                        .setExtractorsFactory(new DefaultExtractorsFactory())
+                        .createMediaSource(auri);
+                return new MergingMediaSource(vESource, aESource);
+            } else {
+                throw new IllegalStateException("Unsupported type: " + type);
             }
         }
 
@@ -417,7 +386,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                 if(server_response.contains("https")){
                     TrackSelector trackSelector = new DefaultTrackSelector();
                     exoPlayer = ExoPlayerFactory.newSimpleInstance(context, trackSelector);
-                    MediaSource mediaSource = buildMediaSource(uri, uri, dataSourceFactory, context);
+                    MediaSource mediaSource = buildMediaSource(uri, uri, dataSourceFactory);
                     exoPlayer.prepare(mediaSource);
                     setupYoutubePlayer(eventChannel, textureEntry, result);
                 }
@@ -509,7 +478,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                 exoPlayer.setAudioAttributes(
                         new AudioAttributes.Builder().setContentType(C.CONTENT_TYPE_MOVIE).build());
             } else {
-                exoPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                exoPlayer.setAudioStreamType(C.STREAM_TYPE_MUSIC);
             }
         }
 

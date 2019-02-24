@@ -1,6 +1,6 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/pub-v3.1.0-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player)
+[![pub package](https://img.shields.io/badge/pub-v3.1.1-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player)
 [![Coverage Status](https://coveralls.io/repos/github/sarbagyastha/youtube_player/badge.svg?branch=master)](https://coveralls.io/github/sarbagyastha/youtube_player?branch=master)
 [![licence](https://img.shields.io/badge/Licence-Apache%202-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
@@ -34,7 +34,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player: ^3.1.0
+  youtube_player: ^3.1.1
 ```
 
 #### 2\. Install
@@ -54,7 +54,7 @@ import 'package:youtube_player/youtube_player.dart';
 ```
 
 #### 4\. Using Youtube Player
-
+         
 ```dart
 ///
 /// LOW = 240p
@@ -65,16 +65,44 @@ import 'package:youtube_player/youtube_player.dart';
 /// "source" can be either youtube video ID or link.
 ///
 YoutubePlayer(
-        context: context,
-        source: "nPt8bK2gbaU",
-        quality: YoutubeQuality.HD,
-        // callbackController is (optional). 
-        // use it to control player on your own.
-        callbackController: (controller) {
-            _controller = controller;
-        },
+    context: context,
+    source: "nPt8bK2gbaU",
+    quality: YoutubeQuality.HD,
+    // callbackController is (optional). 
+    // use it to control player on your own.
+    callbackController: (controller) {
+      _videoController = controller;
+    },
 ),
 ```
+         
+#### 5\. Playing livestream videos
+Must set isLive property to true in order to play livestream videos.
+
+```dart
+YoutubePlayer(
+    context: context,
+    source: "ddFvjfvPnqk",
+    quality: YoutubeQuality.HD,
+    **isLive: true,**
+),
+```
+
+## Didn't like the controls ?
+Don't worry, Got a solution for you. 😉
+Set the playermode to NO_CONTROLS, then you can create your own custom controls using the controller obtained from callbackController property.
+
+```dart
+YoutubePlayer(
+    context: context,
+    source: "ddFvjfvPnqk",
+    playerMode: YoutubePlayerMode.NO_CONTROLS,
+    callbackController: (controller) {
+      _videoController = controller;
+      },
+),
+```
+
 
 ## Details
 | Property | Description | Remarks |
@@ -87,6 +115,7 @@ YoutubePlayer(
 | width | Sets width of player's container | Optional. Default = Screen width. *Must be less than Screen Width.* |
 | controlsActiveBackgroundOverlay | Sets video-wide overlay when controls are active | Optional. Default = true.|
 | controlsColor | Sets color of controls like play, pause, etc. | Optional. |
+| controlsTimeOut | Timeout for showing controls like play, pause, etc. | Optional. Default = 3 seconds |
 | startAt | Sets the starting position of the video. | Optional. |
 | showThumbnail | Shows thumbnail when video is initializing. | Optional. Default = true |
 | keepScreenOn | Triggers screen to be on when not in fullscreen. | Optional. Default = true |

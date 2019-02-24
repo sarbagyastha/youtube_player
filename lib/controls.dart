@@ -21,6 +21,7 @@ class Controls extends StatefulWidget {
   final ControlsShowingCallback controlsShowingCallback;
   final ControlsColor controlsColor;
   final bool controlsActiveBackgroundOverlay;
+  final Duration controlsTimeOut;
   final bool isLive;
 
   Controls({
@@ -38,6 +39,7 @@ class Controls extends StatefulWidget {
     this.isFullScreen = false,
     this.controlsColor,
     this.controlsActiveBackgroundOverlay,
+    this.controlsTimeOut,
   });
   @override
   _ControlsState createState() => _ControlsState();
@@ -264,7 +266,7 @@ class _ControlsState extends State<Controls> {
       });
     }
     if (_showControls) {
-      _timer = Timer(Duration(seconds: 5), () {
+      _timer = Timer(widget.controlsTimeOut, () {
         if (mounted) {
           setState(() {
             _showControls = false;

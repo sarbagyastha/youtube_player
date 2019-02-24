@@ -50,10 +50,8 @@ android {
         }
     }
     dependencies {
-        implementation 'com.google.android.exoplayer:exoplayer-core:2.9.5'
-        implementation 'com.google.android.exoplayer:exoplayer-hls:2.9.5'
-        implementation 'com.google.android.exoplayer:exoplayer-dash:2.9.5'
-        implementation 'com.google.android.exoplayer:exoplayer-smoothstreaming:2.9.5'
+        implementation 'com.google.android.exoplayer:exoplayer-core:2.9.6'
+        implementation 'com.google.android.exoplayer:exoplayer-hls:2.9.6'
         implementation 'com.github.sarbagyastha:android-youtubeExtractor:v2.3.0'
     }
 }

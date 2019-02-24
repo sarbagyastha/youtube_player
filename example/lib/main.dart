@@ -58,6 +58,7 @@ class _MyHomePageState extends State<MyHomePage> {
               startFullScreen: false,
               keepScreenOn: true,
               controlsActiveBackgroundOverlay: true,
+              controlsTimeOut: Duration(seconds: 4),
               playerMode: YoutubePlayerMode.DEFAULT,
               callbackController: (controller) {
                 _videoController = controller;

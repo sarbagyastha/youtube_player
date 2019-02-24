@@ -720,6 +720,7 @@ class YoutubePlayer extends StatefulWidget {
   final bool isLive;
   final ControlsColor controlsColor;
   final bool controlsActiveBackgroundOverlay;
+  final Duration controlsTimeOut;
   final Duration startAt;
   final bool showThumbnail;
   final bool keepScreenOn;
@@ -745,6 +746,7 @@ class YoutubePlayer extends StatefulWidget {
       this.showVideoProgressbar = true,
       this.startFullScreen = false,
       this.controlsActiveBackgroundOverlay = false,
+      this.controlsTimeOut = const Duration(seconds: 3),
       this.playerMode = YoutubePlayerMode.DEFAULT,
       this.onError,
       this.onVideoEnded,
@@ -945,9 +947,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       controlsActiveBackgroundOverlay:
                           widget.controlsActiveBackgroundOverlay,
                       controlsColor: controlsColor,
+                      controlsTimeOut: widget.controlsTimeOut,
                       controlsShowingCallback: (showing) {
                         if (mounted) {
-                          Timer(Duration(seconds: 1), () {
+                          Timer(Duration(milliseconds: 200), () {
                             setState(() {
                               _showVideoProgressBar = !showing;
                             });

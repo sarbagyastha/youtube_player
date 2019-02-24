@@ -1,3 +1,10 @@
+## [3.1.1] - February 24, 2019.
+
+* [Improved] Reduced the footprint of the plugin by removing unnecessary dependencies.
+* [Feature Added] controlsTimeOut property is added.
+* Updated ExoPlayer to Version [2.9.6](https://github.com/google/ExoPlayer/releases/tag/r2.9.6_docs)
+* Minor improvements.
+
 ## [3.1.0] - February 19, 2019.
 
 * [Fixed] Manifest Merger error.
