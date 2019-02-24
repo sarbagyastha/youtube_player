@@ -950,7 +950,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       controlsTimeOut: widget.controlsTimeOut,
                       controlsShowingCallback: (showing) {
                         if (mounted) {
-                          Timer(Duration(milliseconds: 200), () {
+                          Timer(Duration(milliseconds: 300), () {
                             setState(() {
                               _showVideoProgressBar = !showing;
                             });
