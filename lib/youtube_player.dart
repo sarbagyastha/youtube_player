@@ -2,38 +2,9 @@
 // Use of this source code is governed by a MIT license that can be found
 // in the LICENSE file.
 
-/// Youtube Player
-/// Author: Sarbagya Dhaubanjar
-///
-///                               ,,
-///    .M"""bgd                  *MM
-///   ,MI    "Y                   MM
-///   `MMb.      ,6"Yb.  `7Mb,od8 MM,dMMb.   ,6"Yb.  .P"Ybmmm `7M'   `MF',6"Yb.
-///     `YMMNq. 8)   MM    MM' "' MM    `Mb 8)   MM :MI  I8     VA   ,V 8)   MM
-///   .     `MM  ,pm9MM    MM     MM     M8  ,pm9MM  WmmmP"      VA ,V   ,pm9MM
-///   Mb     dM 8M   MM    MM     MM.   ,M9 8M   MM 8M            VVV   8M   MM
-///   P"Ybmmd"  `Moo9^Yo..JMML.   P^YbmdP'  `Moo9^Yo.YMMMMMb      ,V    `Moo9^Yo.
-///                                              6'     dP    ,V
-///                                              Ybmmmd'   OOb"
-///
-///
-///                ,,                           ,,                             ,,
-///   `7MM"""Yb. `7MM                          *MM                             db
-///     MM    `Yb. MM                           MM
-///     MM     `Mb MMpMMMb.   ,6"Yb.`7MM  `7MM  MM,dMMb.   ,6"Yb.  `7MMpMMMb.`7MM  ,6"Yb.  `7Mb,od8
-///     MM      MM MM    MM  8)   MM  MM    MM  MM    `Mb 8)   MM    MM    MM  MM 8)   MM    MM' "'
-///     MM     ,MP MM    MM   ,pm9MM  MM    MM  MM     M8  ,pm9MM    MM    MM  MM  ,pm9MM    MM
-///     MM    ,dP' MM    MM  8M   MM  MM    MM  MM.   ,M9 8M   MM    MM    MM  MM 8M   MM    MM
-///   .JMMmmmdP' .JMML  JMML.`Moo9^Yo.`Mbod"YML.P^YbmdP'  `Moo9^Yo..JMML  JMML.MM `Moo9^Yo..JMML.
-///                                                                         QO MP
-///                                                                         `bmP
-
-/// Website: https://sarbagyastha.com.np
-/// Github: https://github.com/sarbagyastha/youtube_player
-///
-
-import 'dart:io';
 import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player/controls.dart';
@@ -117,7 +88,9 @@ class VideoPlayerValue {
   final Size size;
 
   bool get initialized => duration != null;
+
   bool get hasError => errorDescription != null;
+
   double get aspectRatio => size != null ? size.width / size.height : 1.0;
 
   VideoPlayerValue copyWith({
@@ -729,6 +702,7 @@ class YoutubePlayer extends StatefulWidget {
   final ErrorCallback onError;
   final VoidCallback onVideoEnded;
   final YoutubePlayerMode playerMode;
+  final bool switchFullScreenOnLongPress;
 
   YoutubePlayer(
       {@required this.source,
@@ -749,7 +723,8 @@ class YoutubePlayer extends StatefulWidget {
       this.playerMode = YoutubePlayerMode.DEFAULT,
       this.onError,
       this.onVideoEnded,
-      this.callbackController})
+      this.callbackController,
+      this.switchFullScreenOnLongPress = false})
       : assert(
             (width ?? MediaQuery.of(context).size.width) <=
                 MediaQuery.of(context).size.width,
@@ -762,10 +737,13 @@ class YoutubePlayer extends StatefulWidget {
 
   static Future<double> get brightness async =>
       (await _channel.invokeMethod('brightness')) as double;
+
   static Future setBrightness(double brightness) =>
       _channel.invokeMethod('setBrightness', {"brightness": brightness});
+
   static Future<bool> get isKeptOn async =>
       (await _channel.invokeMethod('isKeptOn')) as bool;
+
   static Future keepOn(bool on) => _channel.invokeMethod('keepOn', {"on": on});
 }
 
@@ -783,6 +761,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   void initState() {
+    print("initState");
     _selectedQuality = qualityMapping(widget.quality);
     _showControls = widget.autoPlay ? false : true;
     if (widget.source.contains("http")) {
@@ -814,8 +793,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   @override
   void dispose() {
-    _videoController.setVolume(0.0);
-    _videoController.dispose();
+    _videoController?.dispose();
     super.dispose();
   }
 
@@ -947,14 +925,15 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                           widget.controlsActiveBackgroundOverlay,
                       controlsColor: controlsColor,
                       controlsTimeOut: widget.controlsTimeOut,
+                      switchFullScreenOnLongPress:
+                          widget.switchFullScreenOnLongPress,
                       controlsShowingCallback: (showing) {
-                        if (mounted) {
-                          Timer(Duration(milliseconds: 600), () {
+                        Timer(Duration(milliseconds: 600), () {
+                          if (mounted)
                             setState(() {
                               _showVideoProgressBar = !showing;
                             });
-                          });
-                        }
+                        });
                       },
                       qualityChangeCallback: (quality, position) {
                         _videoController.pause();

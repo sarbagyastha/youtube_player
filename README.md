@@ -1,9 +1,16 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/pub-v3.1.1+3-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
+[![pub package](https://img.shields.io/badge/pub-v3.2.1-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
 
 A flutter plugin to play Youtube Videos "inline" without API Key in range of Qualities(240p, 360p, 480p, 720p and 1080p).
+
+## Released *New* Youtube Player based on Official Iframe API
+This plugin only supports Android and is a bit hacky approach to playing YouTube videos.
+
+So, published a new plugin [youtube_player_flutter](https://pub.dartlang.org/packages/youtube_player_flutter) which is an officially provided way of playing youtube videos, supporting both **Android** and **iOS** platforms.
+
+
 
 ## Salient Features
   - Inline playback
@@ -32,7 +39,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player: ^3.1.1+3
+  youtube_player: ^3.2.1
 ```
 
 #### 2\. Install
@@ -86,6 +93,22 @@ YoutubePlayer(
 ),
 ```
 
+## Note:
+In scenario, where one need to navigate to next page and return. 
+You'll need to pause the video before navigating, otherwise the video will keep on playing.
+
+```dart
+RaisedButton(
+    child: Text("Next Page"),
+    onPressed: () {
+          _videoController.pause();
+          Navigator.of(context).push(
+               MaterialPageRoute(builder: (context) => NextPage()),
+          );
+    },
+),
+```
+
 ## Didn't like the controls ?
 Don't worry, Got a solution for you. 😉
 Set the playermode to NO_CONTROLS, then you can create your own custom controls using the controller obtained from callbackController property.
@@ -132,12 +155,7 @@ YoutubePlayer(
 
 
 ### Limitation
-* Only Available for Android (Currently)
-
-
-### Todos
-* Support for ios
-* Adaptive playback as per the internet bandwidth
+* Only Available for Android
 
 ### Download
 [Download apk](youtube_player_example.apk) and try the plugin.

@@ -1,3 +1,13 @@
+## [3.2.1] - April 12, 2019.
+
+* `switchFullScreenOnLongPress` property added. If set to true, long press on a video will switch fullscreen.
+
+
+## [3.2.0] - April 1, 2019.
+
+* Issue [#21](https://github.com/sarbagyastha/youtube_player/issues/21) fixed.
+* [IMPORTANT] Read *Note* section.
+
 ## [3.1.1+3] - February 24, 2019.
 
 * Minor changes.

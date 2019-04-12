@@ -3,13 +3,11 @@ description: Demonstrates how to use the youtube_player plugin.
 publish_to: 'none'
 
 environment:
-  sdk: ">=2.0.0-dev.68.0 <3.0.0"
+  sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-
-  cupertino_icons: ^0.1.2
 
 dev_dependencies:
   flutter_test:

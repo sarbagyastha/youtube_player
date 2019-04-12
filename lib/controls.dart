@@ -1,8 +1,12 @@
+// Copyright 2019 Sarbagya Dhaubanjar. All rights reserved.
+// Use of this source code is governed by a MIT license that can be found
+// in the LICENSE file.
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:youtube_player/youtube_player.dart';
 import 'package:share/share.dart';
+import 'package:youtube_player/youtube_player.dart';
 
 typedef YoutubeQualityChangeCallback(String quality, Duration position);
 typedef ControlsShowingCallback(bool showing);
@@ -23,6 +27,7 @@ class Controls extends StatefulWidget {
   final bool controlsActiveBackgroundOverlay;
   final Duration controlsTimeOut;
   final bool isLive;
+  final bool switchFullScreenOnLongPress;
 
   Controls({
     this.isLive,
@@ -40,7 +45,9 @@ class Controls extends StatefulWidget {
     this.controlsColor,
     this.controlsActiveBackgroundOverlay,
     this.controlsTimeOut,
+    this.switchFullScreenOnLongPress,
   });
+
   @override
   _ControlsState createState() => _ControlsState();
 }
@@ -66,36 +73,43 @@ class _ControlsState extends State<Controls> {
     } else {
       _selectedQuality = widget.defaultQuality.toUpperCase();
     }
-    widget.controller.addListener(() {
-      if (widget.controller.value != null) {
-        if (widget.controller.value.position != null &&
-            widget.controller.value.duration != null) {
-          if (mounted) {
-            setState(() {
-              currentPosition =
-                  (widget.controller.value.position.inSeconds ?? 0) /
-                      widget.controller.value.duration.inSeconds;
-              _buffering = widget.controller.value.isBuffering;
-              _currentPositionString =
-                  formatDuration(widget.controller.value.position);
-              _remainingString = "- " +
-                  formatDuration(widget.controller.value.duration -
-                      widget.controller.value.position);
-            });
-          }
-        }
-      }
-    });
+    widget.controller.addListener(listener);
     _showControls = widget.showControls;
     widget.controlsShowingCallback(_showControls);
     super.initState();
   }
 
+  listener() {
+    if (widget.controller.value != null) {
+      if (widget.controller.value.position != null &&
+          widget.controller.value.duration != null) {
+        if (mounted && widget.controller.value.isPlaying) {
+          setState(() {
+            currentPosition =
+                (widget.controller.value.position.inSeconds ?? 0) /
+                    widget.controller.value.duration.inSeconds;
+            _buffering = widget.controller.value.isBuffering;
+            _currentPositionString =
+                formatDuration(widget.controller.value.position);
+            _remainingString = "- " +
+                formatDuration(widget.controller.value.duration -
+                    widget.controller.value.position);
+          });
+        }
+      }
+    }
+  }
+
+  @override
+  void deactivate() {
+    widget.controller.removeListener(listener);
+    super.deactivate();
+  }
+
   @override
   void dispose() {
     if (!widget.isFullScreen) {
-      widget.controller.setVolume(0);
-      widget.controller.dispose();
+      widget.controller?.setVolume(0);
     }
     super.dispose();
   }
@@ -114,9 +128,10 @@ class _ControlsState extends State<Controls> {
             : Container(),
         GestureDetector(
           onLongPress: () {
-            widget.isFullScreen
-                ? Navigator.pop(context)
-                : widget.fullScreenCallback();
+            if (widget.switchFullScreenOnLongPress)
+              widget.isFullScreen
+                  ? Navigator.pop(context)
+                  : widget.fullScreenCallback();
           },
           onTap: onTapAction,
           child: AnimatedContainer(

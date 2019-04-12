@@ -649,7 +649,7 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
             case "keepOn":
                 Boolean on = call.argument("on");
                 if (on) {
-                    Log.i(TAG,"Keeping screen on");
+
                     registrar.activity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
                 }
                 else{

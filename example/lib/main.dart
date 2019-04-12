@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player/youtube_player.dart';
 
+import 'video_detail.dart';
+
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -64,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
               aspectRatio: 16 / 9,
               autoPlay: true,
               startFullScreen: false,
-              keepScreenOn: true,
+              //keepScreenOn: true,
               controlsActiveBackgroundOverlay: true,
               controlsTimeOut: Duration(seconds: 4),
               playerMode: YoutubePlayerMode.DEFAULT,
@@ -213,14 +215,24 @@ class _MyHomePageState extends State<MyHomePage> {
                     },
                   ),
                   OutlineButton(
-                      child: Text(status),
-                      onPressed: () {
-                        setState(() {
-                          _videoController.value.isPlaying
-                              ? status = "Playing"
-                              : status = "Paused";
-                        });
-                      }),
+                    child: Text(status),
+                    onPressed: () {
+                      setState(() {
+                        _videoController.value.isPlaying
+                            ? status = "Playing"
+                            : status = "Paused";
+                      });
+                    },
+                  ),
+                  RaisedButton(
+                    child: Text("Next Page"),
+                    onPressed: () {
+                      _videoController.pause();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => VideoDetail()),
+                      );
+                    },
+                  ),
                 ],
               ),
             )
@@ -245,7 +257,7 @@ class _MyHomePageState extends State<MyHomePage> {
   getSharedVideoUrl() async {
     try {
       var sharedData = await platform.invokeMethod("getSharedYoutubeVideoUrl");
-      if (sharedData != null) {
+      if (sharedData != null && mounted) {
         setState(() {
           _source = sharedData;
           print(_source);
