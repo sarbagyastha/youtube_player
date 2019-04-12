@@ -10,7 +10,7 @@ This plugin only supports Android and is a bit hacky approach to playing YouTube
 
 So, published a new plugin [youtube_player_flutter](https://pub.dartlang.org/packages/youtube_player_flutter) which is an officially provided way of playing youtube videos, supporting both **Android** and **iOS** platforms.
 
-
+Note: will keep on updating this plugin too.
 
 ## Salient Features
   - Inline playback
