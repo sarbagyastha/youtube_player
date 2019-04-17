@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player/controls.dart';
 
-enum YoutubeQuality { LOW, MEDIUM, HIGH, HD, FHD }
+enum YoutubeQuality { LOWEST, LOW, MEDIUM, HIGH, HD, FHD }
 enum YoutubePlayerMode { DEFAULT, NO_CONTROLS }
 
 final MethodChannel _channel =
@@ -244,7 +244,7 @@ class VideoPlayerController extends ValueNotifier<VideoPlayerValue> {
           _applyPlayPause();
           break;
         case 'completed':
-          value = value.copyWith(isPlaying: false);
+          value = value.copyWith(isPlaying: false, position: value.duration);
           _timer?.cancel();
           break;
         case 'bufferingUpdate':
@@ -756,7 +756,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   bool _showControls;
   String _selectedQuality;
   bool _showVideoProgressBar = true;
-  bool _videoEndListenerCalled;
   ControlsColor controlsColor;
 
   @override
@@ -799,7 +798,6 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   void initializeYTController() {
     _videoController.initialize().then((_) {
-      _videoEndListenerCalled = false;
       if (widget.autoPlay) _videoController.play();
       if (mounted) {
         setState(() {});
@@ -809,15 +807,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
       }
       if (widget.startAt != null) _videoController.seekTo(widget.startAt);
       _videoController.addListener(() {
-        if (_videoController.value.duration != null &&
-            _videoController.value.position != null) {
-          if (_videoController.value.position.inSeconds ==
-                  _videoController.value.duration.inSeconds &&
-              !_videoEndListenerCalled) {
-            widget.onVideoEnded();
-            _videoEndListenerCalled = true;
-          }
-        }
+        if (_videoController.value.position == _videoController.value.duration)
+          widget.onVideoEnded();
       });
     });
     if (widget.callbackController != null) {
@@ -990,6 +981,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
 
   String qualityMapping(YoutubeQuality quality) {
     switch (quality) {
+      case YoutubeQuality.LOWEST:
+        return '144p';
       case YoutubeQuality.LOW:
         return '240p';
       case YoutubeQuality.MEDIUM:

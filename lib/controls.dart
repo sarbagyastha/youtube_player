@@ -412,7 +412,11 @@ class _ControlsState extends State<Controls> {
                       });
                     }
                     widget.controller.seekTo(
-                        Duration(seconds: (position * totalLength).floor()));
+                      Duration(
+                        seconds: (position * totalLength).floor(),
+                      ),
+                    );
+                    widget.controller.play();
                   },
                 ),
               ),
@@ -480,20 +484,24 @@ class _ControlsState extends State<Controls> {
   }
 
   void _resolutionBottomSheet() {
-    Scaffold.of(context).showBottomSheet((BuildContext context) {
-      return Container(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            _qualityRow('1080p'),
-            _qualityRow('720p'),
-            _qualityRow('480p'),
-            _qualityRow('360p'),
-            _qualityRow('240p'),
-          ],
-        ),
-      );
-    });
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Container(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              _qualityRow('1080p'),
+              _qualityRow('720p'),
+              _qualityRow('480p'),
+              _qualityRow('360p'),
+              _qualityRow('240p'),
+              _qualityRow('144p'),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   Widget _qualityRow(String quality) {

@@ -1,6 +1,6 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/pub-v3.2.1-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
+[![pub package](https://img.shields.io/badge/pub-v3.2.2-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
 
 A flutter plugin to play Youtube Videos "inline" without API Key in range of Qualities(240p, 360p, 480p, 720p and 1080p).
@@ -8,7 +8,7 @@ A flutter plugin to play Youtube Videos "inline" without API Key in range of Qua
 ## Released *New* Youtube Player based on Official Iframe API
 This plugin only supports Android and is a bit hacky approach to playing YouTube videos.
 
-So, published a new plugin [youtube_player_flutter](https://pub.dartlang.org/packages/youtube_player_flutter) which is an officially provided way of playing youtube videos, supporting both **Android** and **iOS** platforms.
+So, published a new plugin [**youtube_player_flutter**](https://pub.dartlang.org/packages/youtube_player_flutter) which is an officially provided way of playing youtube videos, supporting both **Android** and **iOS** platforms.
 
 Note: will keep on updating this plugin too.
 
@@ -39,7 +39,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player: ^3.2.1
+  youtube_player: ^3.2.2
 ```
 
 #### 2\. Install
@@ -62,6 +62,7 @@ import 'package:youtube_player/youtube_player.dart';
          
 ```dart
 ///
+/// LOWEST = 144p
 /// LOW = 240p
 /// MEDIUM = 360p
 /// HIGH = 480p
@@ -155,7 +156,7 @@ YoutubePlayer(
 
 
 ### Limitation
-* Only Available for Android
+* Only Available for Android, use [**youtube_player_flutter**](https://pub.dartlang.org/packages/youtube_player_flutter) instead iOS support is required.
 
 ### Download
 [Download apk](youtube_player_example.apk) and try the plugin.

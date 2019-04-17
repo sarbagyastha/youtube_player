@@ -102,8 +102,6 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
 
     private static class YoutubePlayer {
 
-        //private static String liveStreamUrl;
-
         private SimpleExoPlayer exoPlayer;
 
         private Surface surface;
@@ -142,6 +140,15 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                     String a,v;
                     if (ytFiles != null) {
                         switch (quality) {
+                            case "144p":
+                                if(ytFiles.indexOfKey(278)>0){
+                                    Log.i(TAG,"Quality: 144p WEBM");
+                                    v = ytFiles.get(278).getUrl();
+                                }else{
+                                    Log.i(TAG,"Quality: 144p MP4");
+                                    v = ytFiles.get(160).getUrl();
+                                }
+                                break;
                             case "240p":
                                 if(ytFiles.indexOfKey(242)>0){
                                     Log.i(TAG,"Quality: 240p WEBM");
@@ -452,9 +459,15 @@ public class YoutubePlayerPlugin implements MethodCallHandler {
                                 // iOS supports a list of buffered ranges, so here is a list with a single range.
                                 event.put("values", Collections.singletonList(range));
                                 eventSink.success(event);
-                            } else if (playbackState == Player.STATE_READY && !isInitialized) {
-                                isInitialized = true;
-                                sendInitialized();
+                            } else if (playbackState == Player.STATE_READY) {
+                                if (!isInitialized) {
+                                    isInitialized = true;
+                                    sendInitialized();
+                                }
+                            } else if (playbackState == Player.STATE_ENDED) {
+                                Map<String, Object> event = new HashMap<>();
+                                event.put("event", "completed");
+                                eventSink.success(event);
                             }
                         }
 

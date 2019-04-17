@@ -1,3 +1,12 @@
+## [3.2.2] - April 17, 2019.
+
+* [Fixed] Issues with `onVideoEnded` as [#28](https://github.com/sarbagyastha/youtube_player/issues/28).
+* [Feature Added] Support for 144p playback added, as requested in [#27](https://github.com/sarbagyastha/youtube_player/issues/27).
+* [Improved] Quality change uses Modal Bottom Sheet now.
+* Updated to latest dependencies. 
+* Changed dart sdk constraint to `>=2.1.0 <3.0.0`.
+
+
 ## [3.2.1] - April 12, 2019.
 
 * `switchFullScreenOnLongPress` property added. If set to true, long press on a video will switch fullscreen.
