@@ -1,16 +1,16 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/pub-v3.2.2-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
+[![pub package](https://img.shields.io/badge/pub-v3.3.0-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
 
-A flutter plugin to play Youtube Videos "inline" without API Key in range of Qualities(240p, 360p, 480p, 720p and 1080p).
+A flutter plugin to play Youtube Videos "inline" without API Key in range of Qualities(144p, 240p, 360p, 480p, 720p and 1080p).
 
 ## Released *New* Youtube Player based on Official Iframe API
 This plugin only supports Android and is a bit hacky approach to playing YouTube videos.
 
 So, published a new plugin [**youtube_player_flutter**](https://pub.dartlang.org/packages/youtube_player_flutter) which is an officially provided way of playing youtube videos, supporting both **Android** and **iOS** platforms.
 
-Note: will keep on updating this plugin too.
+Note: Will keep on maintaining this plugin too.
 
 ## Salient Features
   - Inline playback
@@ -39,7 +39,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player: ^3.2.2
+  youtube_player: ^3.3.0
 ```
 
 #### 2\. Install

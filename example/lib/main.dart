@@ -66,7 +66,7 @@ class _MyHomePageState extends State<MyHomePage> {
               aspectRatio: 16 / 9,
               autoPlay: true,
               startFullScreen: false,
-              //keepScreenOn: true,
+              hideShareButton: true,
               controlsActiveBackgroundOverlay: true,
               controlsTimeOut: Duration(seconds: 4),
               playerMode: YoutubePlayerMode.DEFAULT,

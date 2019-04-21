@@ -703,29 +703,31 @@ class YoutubePlayer extends StatefulWidget {
   final VoidCallback onVideoEnded;
   final YoutubePlayerMode playerMode;
   final bool switchFullScreenOnLongPress;
+  final bool hideShareButton;
 
-  YoutubePlayer(
-      {@required this.source,
-      @required this.context,
-      @required this.quality,
-      this.aspectRatio = 16 / 9,
-      this.width,
-      this.isLive = false,
-      this.autoPlay = true,
-      this.controlsColor,
-      this.startAt,
-      this.showThumbnail = false,
-      this.keepScreenOn = true,
-      this.showVideoProgressbar = true,
-      this.startFullScreen = false,
-      this.controlsActiveBackgroundOverlay = false,
-      this.controlsTimeOut = const Duration(seconds: 3),
-      this.playerMode = YoutubePlayerMode.DEFAULT,
-      this.onError,
-      this.onVideoEnded,
-      this.callbackController,
-      this.switchFullScreenOnLongPress = false})
-      : assert(
+  YoutubePlayer({
+    @required this.source,
+    @required this.context,
+    @required this.quality,
+    this.aspectRatio = 16 / 9,
+    this.width,
+    this.isLive = false,
+    this.autoPlay = true,
+    this.controlsColor,
+    this.startAt,
+    this.showThumbnail = false,
+    this.keepScreenOn = true,
+    this.showVideoProgressbar = true,
+    this.startFullScreen = false,
+    this.controlsActiveBackgroundOverlay = false,
+    this.controlsTimeOut = const Duration(seconds: 3),
+    this.playerMode = YoutubePlayerMode.DEFAULT,
+    this.onError,
+    this.onVideoEnded,
+    this.callbackController,
+    this.switchFullScreenOnLongPress = false,
+    this.hideShareButton = false,
+  }) : assert(
             (width ?? MediaQuery.of(context).size.width) <=
                 MediaQuery.of(context).size.width,
             "Width must be less than Screen Width.\nScreen width:${MediaQuery.of(context).size.width}\nGiven width:$width");
@@ -950,6 +952,7 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
                       fullScreenCallback: () async {
                         await _pushFullScreenWidget(context);
                       },
+                      hideShareButton: widget.hideShareButton,
                     )
                   : Container(),
             ),

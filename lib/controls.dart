@@ -28,6 +28,7 @@ class Controls extends StatefulWidget {
   final Duration controlsTimeOut;
   final bool isLive;
   final bool switchFullScreenOnLongPress;
+  final bool hideShareButton;
 
   Controls({
     this.isLive,
@@ -46,6 +47,7 @@ class Controls extends StatefulWidget {
     this.controlsActiveBackgroundOverlay,
     this.controlsTimeOut,
     this.switchFullScreenOnLongPress,
+    this.hideShareButton,
   });
 
   @override
@@ -355,22 +357,27 @@ class _ControlsState extends State<Controls> {
                       _resolutionBottomSheet();
                     }
                   },
-                  child: Text(
-                    _selectedQuality,
-                    style: TextStyle(
-                      color: widget.controlsColor.buttonColor,
-                      fontWeight: FontWeight.w900,
-                      fontSize: widget.isFullScreen ? 22 : 16,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      _selectedQuality,
+                      style: TextStyle(
+                        color: widget.controlsColor.buttonColor,
+                        fontWeight: FontWeight.w900,
+                        fontSize: widget.isFullScreen ? 22 : 16,
+                      ),
                     ),
                   ),
                 ),
-          IconButton(
-            icon: Icon(
-              Icons.share,
-              color: widget.controlsColor.buttonColor,
-            ),
-            onPressed: shareVideo,
-          ),
+          widget.hideShareButton
+              ? Container()
+              : IconButton(
+                  icon: Icon(
+                    Icons.share,
+                    color: widget.controlsColor.buttonColor,
+                  ),
+                  onPressed: shareVideo,
+                ),
         ],
       ),
     );

@@ -1,3 +1,6 @@
+## [3.3.0] - April 21, 2019
+* Added option to hide share button using `hideShareButton` property.
+
 ## [3.2.2] - April 17, 2019.
 
 * [Fixed] Issues with `onVideoEnded` as [#28](https://github.com/sarbagyastha/youtube_player/issues/28).
