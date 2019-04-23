@@ -103,6 +103,13 @@ class _ControlsState extends State<Controls> {
   }
 
   @override
+  void didUpdateWidget(Controls oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    oldWidget.controller.removeListener(listener);
+    widget.controller.addListener(listener);
+  }
+
+  @override
   void deactivate() {
     widget.controller.removeListener(listener);
     super.deactivate();

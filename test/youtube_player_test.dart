@@ -38,7 +38,6 @@ class FakeController extends ValueNotifier<VideoPlayerValue>
   Future<void> play() async {}
   @override
   Future<void> setLooping(bool looping) async {}
-
 }
 
 void main() {
@@ -86,9 +85,7 @@ void main() {
     );
     expect(find.byKey(testKey), findsOneWidget);
   });
-
 }
-
 
 class YoutubePlayerTest extends StatefulWidget {
   const YoutubePlayerTest({Key key}) : super(key: key);

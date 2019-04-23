@@ -1,3 +1,6 @@
+## [3.3.1] - April 21, 2019
+* [FIXED] Issue [#31](https://github.com/sarbagyastha/youtube_player/issues/31).
+
 ## [3.3.0] - April 21, 2019
 * Added option to hide share button using `hideShareButton` property.
 

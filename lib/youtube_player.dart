@@ -759,10 +759,10 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   String _selectedQuality;
   bool _showVideoProgressBar = true;
   ControlsColor controlsColor;
+  bool videoEndCalled = false;
 
   @override
   void initState() {
-    print("initState");
     _selectedQuality = qualityMapping(widget.quality);
     _showControls = widget.autoPlay ? false : true;
     if (widget.source.contains("http")) {
@@ -799,24 +799,28 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   }
 
   void initializeYTController() {
-    _videoController.initialize().then((_) {
-      if (widget.autoPlay) _videoController.play();
-      if (mounted) {
-        setState(() {});
-      }
-      if (widget.startFullScreen) {
-        _pushFullScreenWidget(context);
-      }
-      if (widget.startAt != null) _videoController.seekTo(widget.startAt);
-      _videoController.addListener(() {
-        if (_videoController.value.position == _videoController.value.duration)
-          widget.onVideoEnded();
-      });
-    });
+    _videoController.initialize().then(
+      (_) {
+        if (widget.autoPlay) _videoController.play();
+        if (mounted) {
+          setState(() {});
+        }
+        if (widget.startFullScreen) {
+          _pushFullScreenWidget(context);
+        }
+        if (widget.startAt != null) _videoController.seekTo(widget.startAt);
+        _videoController.addListener(listener);
+      },
+    );
     if (widget.callbackController != null) {
       widget.callbackController(_videoController);
     }
     print("Youtube Video Id: $videoId");
+  }
+
+  listener() {
+    if (_videoController.value.position == _videoController.value.duration)
+      widget.onVideoEnded();
   }
 
   @override
