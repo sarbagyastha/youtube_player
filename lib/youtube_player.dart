@@ -807,6 +807,11 @@ class YoutubePlayer extends StatefulWidget {
   /// Default = true
   final bool reactToOrientationChange;
 
+  /// If set to true, video will play in loop.
+  ///
+  /// Default = false
+  final bool loop;
+
   YoutubePlayer({
     @required this.source,
     @required this.context,
@@ -830,6 +835,7 @@ class YoutubePlayer extends StatefulWidget {
     this.switchFullScreenOnLongPress = false,
     this.hideShareButton = false,
     this.reactToOrientationChange = true,
+    this.loop = false,
   }) : assert(
             (width ?? MediaQuery.of(context).size.width) <=
                 MediaQuery.of(context).size.width,
@@ -865,6 +871,8 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   ControlsColor controlsColor;
 
   bool _isFullScreen = false;
+  bool _triggeredByUser = false;
+  bool _videoEndedCalled = false;
 
   @override
   void initState() {
@@ -915,7 +923,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
         _pushFullScreenWidget(context, false);
       }
       // Switched to Portrait Mode
-      if (w < h && _isFullScreen) {
+      if (w < h && _isFullScreen && !_triggeredByUser) {
         Navigator.pop(context);
       }
     }
@@ -943,8 +951,18 @@ class _YoutubePlayerState extends State<YoutubePlayer>
   }
 
   listener() {
-    if (_videoController.value.position == _videoController.value.duration)
+    if (_videoController.value.position == _videoController.value.duration &&
+        !_videoEndedCalled) {
       widget.onVideoEnded();
+      if (widget.loop) {
+        _videoController.seekTo(
+          Duration(seconds: 0),
+        );
+      }
+      _videoEndedCalled = true;
+    } else {
+      _videoEndedCalled = false;
+    }
   }
 
   @override
@@ -1164,6 +1182,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
+      _triggeredByUser = true;
     }
 
     _isFullScreen = true;
@@ -1180,6 +1199,7 @@ class _YoutubePlayerState extends State<YoutubePlayer>
           DeviceOrientation.landscapeRight,
         ],
       );
+      _triggeredByUser = false;
     }
   }
 

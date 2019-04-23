@@ -1,3 +1,8 @@
+## [3.4.1] - April 23, 2019
+* [FIXED] Bugs with orientation changes.
+* [FIXED] `onVideoEnded` being called more than once sometimes.
+* [Feature Added] [`loop`](https://pub.dartlang.org/documentation/youtube_player/latest/youtube_player/YoutubePlayer/reactToOrientationChange.html) property added.
+
 ## [3.4.0] - April 23, 2019
 * [FIXED] Issue [#31](https://github.com/sarbagyastha/youtube_player/issues/31).
 * [Feature Added] FullScreen on orientation change. This can controlled using new [`reactToOrientationChange`](https://pub.dartlang.org/documentation/youtube_player/latest/youtube_player/YoutubePlayer/reactToOrientationChange.html) property.

@@ -65,6 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
               quality: YoutubeQuality.HD,
               aspectRatio: 16 / 9,
               autoPlay: true,
+              loop: false,
+              reactToOrientationChange: true,
               startFullScreen: false,
               controlsActiveBackgroundOverlay: true,
               controlsTimeOut: Duration(seconds: 4),
