@@ -9,8 +9,33 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube_player/controls.dart';
 
-enum YoutubeQuality { LOWEST, LOW, MEDIUM, HIGH, HD, FHD }
-enum YoutubePlayerMode { DEFAULT, NO_CONTROLS }
+enum YoutubeQuality {
+  /// = 144p
+  LOWEST,
+
+  /// = 240p
+  LOW,
+
+  /// = 360p
+  MEDIUM,
+
+  /// = 480p
+  HIGH,
+
+  /// = 720p
+  HD,
+
+  /// = 1080p
+  FHD,
+}
+
+enum YoutubePlayerMode {
+  /// Default mode shows controls.
+  DEFAULT,
+
+  /// No controls mode intended for setting custom controls to the player.
+  NO_CONTROLS,
+}
 
 final MethodChannel _channel =
     const MethodChannel('sarbagyastha.com.np/youtubePlayer')
@@ -682,28 +707,105 @@ class _VideoProgressIndicatorState extends State<VideoProgressIndicator> {
 typedef YPCallBack(VideoPlayerController controller);
 typedef ErrorCallback(String error);
 
+/// Displayes the video as defined in [source].
 class YoutubePlayer extends StatefulWidget {
+  ///Source of youtube video. It can be Video ID or URL.
   final String source;
+
+  /// Sets the video quality as defined in [YoutubeQuality].
+  ///
+  /// Default = YoutubeQuality.HD
   final YoutubeQuality quality;
+
+  /// [BuildContext] of parent widget.
   final BuildContext context;
+
+  /// Sets the aspect ratio of the player. e.g. [aspectRatio] = 16/9
+  ///
+  /// Note: The player automatically adapts height using [aspectRatio] and [width].
+  ///
+  /// Default = 16/9
   final double aspectRatio;
+
+  /// Sets width to the player. It cannot be greater than Device's width.
+  ///
+  /// Note: The player automatically adapts height using [aspectRatio] and [width].
+  ///
+  /// Default = Screen's width
   final double width;
+
+  /// Defines whether to auto play video or not.
+  ///
+  /// Default = true
   final bool autoPlay;
+
+  /// Set this to true if the [source] is for live stream video.
+  ///
+  /// Default = false
   final bool isLive;
+
+  /// Sets color of controls like play, pause, etc.
   final ControlsColor controlsColor;
+
+  /// Sets video-wide overlay when controls are active
   final bool controlsActiveBackgroundOverlay;
+
+  /// Timeout for showing controls like play, pause, etc.
+  ///
+  /// Default = Duration(seconds: 3)
   final Duration controlsTimeOut;
+
+  /// Sets the starting position of the video.
   final Duration startAt;
+
+  /// Shows thumbnail when video is initializing.
+  ///
+  /// Default = false
   final bool showThumbnail;
+
+  /// Triggers screen to be on when not in fullscreen.
+  ///
+  /// Default = true
   final bool keepScreenOn;
+
+  ///Shows progressbar below the video.
+  ///
+  /// Default = true
   final bool showVideoProgressbar;
+
+  /// If set to true, video will start in full screen.
+  ///
+  /// Default = false
   final bool startFullScreen;
+
+  /// Returns [VideoPlayerController] after successfully initializing video.
   final YPCallBack callbackController;
+
+  /// Returns error if any found.
   final ErrorCallback onError;
+
+  /// Callback which reports video end event.
   final VoidCallback onVideoEnded;
+
+  /// Defines mode of the player.
+  ///
+  /// Default = YoutubePlayerMode.Default
   final YoutubePlayerMode playerMode;
+
+  /// If set to true, long press gesture on video will switch to full screen.
+  ///
+  /// Default = false
   final bool switchFullScreenOnLongPress;
+
+  /// If set to true, hides option to share video in the player.
+  ///
+  /// Default = false
   final bool hideShareButton;
+
+  /// If set to false, orientation Change won't trigger fullscreen.
+  ///
+  /// Default = true
+  final bool reactToOrientationChange;
 
   YoutubePlayer({
     @required this.source,
@@ -727,6 +829,7 @@ class YoutubePlayer extends StatefulWidget {
     this.callbackController,
     this.switchFullScreenOnLongPress = false,
     this.hideShareButton = false,
+    this.reactToOrientationChange = true,
   }) : assert(
             (width ?? MediaQuery.of(context).size.width) <=
                 MediaQuery.of(context).size.width,
@@ -749,7 +852,8 @@ class YoutubePlayer extends StatefulWidget {
   static Future keepOn(bool on) => _channel.invokeMethod('keepOn', {"on": on});
 }
 
-class _YoutubePlayerState extends State<YoutubePlayer> {
+class _YoutubePlayerState extends State<YoutubePlayer>
+    with WidgetsBindingObserver {
   VideoPlayerController _videoController;
   String videoId = "";
   bool initialize = true;
@@ -759,10 +863,12 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
   String _selectedQuality;
   bool _showVideoProgressBar = true;
   ControlsColor controlsColor;
-  bool videoEndCalled = false;
+
+  bool _isFullScreen = false;
 
   @override
   void initState() {
+    super.initState();
     _selectedQuality = qualityMapping(widget.quality);
     _showControls = widget.autoPlay ? false : true;
     if (widget.source.contains("http")) {
@@ -789,13 +895,31 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
           timerColor: widget.controlsColor.timerColor,
         );
     }
-    super.initState();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
     _videoController?.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    if (widget.reactToOrientationChange) {
+      double w = WidgetsBinding.instance.window.physicalSize.width;
+      double h = WidgetsBinding.instance.window.physicalSize.height;
+      // Switched to LandScape Mode
+      if (w > h && !_isFullScreen) {
+        _pushFullScreenWidget(context, false);
+      }
+      // Switched to Portrait Mode
+      if (w < h && _isFullScreen) {
+        Navigator.pop(context);
+      }
+    }
+    super.didChangeMetrics();
   }
 
   void initializeYTController() {
@@ -962,7 +1086,8 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
             ),
             _videoController.value.initialized &&
                     _showVideoProgressBar &&
-                    widget.showVideoProgressbar
+                    widget.showVideoProgressbar &&
+                    !_isFullScreen
                 ? Positioned(
                     bottom: -3.5,
                     child: Container(
@@ -1026,32 +1151,36 @@ class _YoutubePlayerState extends State<YoutubePlayer> {
     new RegExp(r"^https:\/\/youtu\.be\/([_\-a-zA-Z0-9]{11}).*$")
   ];
 
-  Future<dynamic> _pushFullScreenWidget(BuildContext context) async {
-    final isAndroid = Theme.of(context).platform == TargetPlatform.android;
+  Future<dynamic> _pushFullScreenWidget(BuildContext context,
+      [bool triggeredByUser = true]) async {
     final TransitionRoute<Null> route = PageRouteBuilder<Null>(
       settings: RouteSettings(isInitialRoute: false),
       pageBuilder: _fullScreenRoutePageBuilder,
     );
 
     SystemChrome.setEnabledSystemUIOverlays([]);
-    if (isAndroid) {
+    if (triggeredByUser) {
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]);
     }
 
+    _isFullScreen = true;
     await Navigator.of(context).push(route);
+    _isFullScreen = false;
 
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-    SystemChrome.setPreferredOrientations(
-      const [
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-        DeviceOrientation.landscapeLeft,
-        DeviceOrientation.landscapeRight,
-      ],
-    );
+    if (triggeredByUser) {
+      SystemChrome.setPreferredOrientations(
+        const [
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+          DeviceOrientation.landscapeLeft,
+          DeviceOrientation.landscapeRight,
+        ],
+      );
+    }
   }
 
   Widget _fullScreenRoutePageBuilder(

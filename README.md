@@ -1,14 +1,12 @@
 # Youtube Player Plugin
 
-[![pub package](https://img.shields.io/badge/pub-v3.3.1-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
+[![pub package](https://img.shields.io/badge/pub-v3.4.0-green.svg)](https://pub.dartlang.org/packages/youtube_player) [![Build Status](https://travis-ci.org/sarbagyastha/youtube_player.svg?branch=master)](https://travis-ci.org/sarbagyastha/youtube_player) [![licence](https://img.shields.io/badge/Licence-MIT-orange.svg)](https://github.com/sarbagyastha/youtube_player/blob/master/LICENSE)
 
 
 A flutter plugin to play Youtube Videos "inline" without API Key in range of Qualities(144p, 240p, 360p, 480p, 720p and 1080p).
 
 ## Released *New* Youtube Player based on Official Iframe API
-This plugin only supports Android and is a bit hacky approach to playing YouTube videos.
-
-So, published a new plugin [**youtube_player_flutter**](https://pub.dartlang.org/packages/youtube_player_flutter) which is an officially provided way of playing youtube videos, supporting both **Android** and **iOS** platforms.
+This plugin only supports Android. So, published a new plugin [**youtube_player_flutter**](https://pub.dartlang.org/packages/youtube_player_flutter) which is an officially provided way of playing youtube videos, supporting both **Android** and **iOS** platforms.
 
 Note: Will keep on maintaining this plugin too.
 
@@ -39,7 +37,7 @@ Add this to you package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  youtube_player: ^3.3.1
+  youtube_player: ^3.4.0
 ```
 
 #### 2\. Install
@@ -127,26 +125,7 @@ YoutubePlayer(
 
 
 ## Details
-| Property | Description | Remarks |
-| ------ | ------ | ------ |
-| source | Source of youtube video. Video ID or URL | Required. | 
-| context | BuildContext of parent. | Required. |
-| quality | Sets quality for youtube videos. | Required. |
-| isLive | Denotes if the source is Live Video | Optional. Default = false.|
-| aspectRatio | Sets aspect ratio of player's container  | Optional. Default = 16/9 |
-| width | Sets width of player's container | Optional. Default = Screen width. *Must be less than Screen Width.* |
-| controlsActiveBackgroundOverlay | Sets video-wide overlay when controls are active | Optional. Default = true.|
-| controlsColor | Sets color of controls like play, pause, etc. | Optional. |
-| controlsTimeOut | Timeout for showing controls like play, pause, etc. | Optional. Default = 3 seconds |
-| startAt | Sets the starting position of the video. | Optional. |
-| showThumbnail | Shows thumbnail when video is initializing. | Optional. Default = true |
-| keepScreenOn | Triggers screen to be on when not in fullscreen. | Optional. Default = true |
-| showVideoProgressBar | Shows progressbar below the video. | Optional. Default = true |
-| startFullScreen | Start video in a full screen. | Optional. Default = false |
-| playerMode | Sets player mode. YoutubePlayerMode.NO_CONTROLS hides the controls from player. *Useful when custom controls are to be build.* | Optional. Default = YoutubePlayerMode.DEFAULT |
-| onError | Callback which reports error. | Optional.|
-| onVideoEnded | Callback which reports end of video. | Optional.|
-| callbackController | Callback which provides current Video Controller. | Optional.|
+Read about all the available properties for the player [here](https://pub.dartlang.org/documentation/youtube_player/latest/youtube_player/YoutubePlayer-class.html).
 
 
 

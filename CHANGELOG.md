@@ -1,5 +1,7 @@
-## [3.3.1] - April 21, 2019
+## [3.4.0] - April 23, 2019
 * [FIXED] Issue [#31](https://github.com/sarbagyastha/youtube_player/issues/31).
+* [Feature Added] FullScreen on orientation change. This can controlled using new [`reactToOrientationChange`](https://pub.dartlang.org/documentation/youtube_player/latest/youtube_player/YoutubePlayer/reactToOrientationChange.html) property.
+* Dart Docs Added.
 
 ## [3.3.0] - April 21, 2019
 * Added option to hide share button using `hideShareButton` property.
