@@ -1,3 +1,6 @@
+## [3.5.0+1] - May 10, 2020
+* Discontinued. Use [youtube_player_flutter](https://pub.dev/packages/youtube_player_flutter) instead.
+
 ## [3.4.1] - April 23, 2019
 * [FIXED] Bugs with orientation changes.
 * [FIXED] `onVideoEnded` being called more than once sometimes.
